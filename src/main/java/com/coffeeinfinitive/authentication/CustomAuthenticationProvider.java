@@ -26,6 +26,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         System.out.println("Password: " +  password);
 
 
+
         if(!name.equals("admin")){
             throw new UsernameNotFoundException("Username not found!!.");
         }

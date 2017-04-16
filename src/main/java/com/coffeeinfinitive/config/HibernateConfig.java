@@ -22,9 +22,9 @@ import java.util.Properties;
  */
 
 @Configuration
-@ComponentScan({ "com.mservice.sdk.config" })
+@ComponentScan({ "com.coffeeinfinitive.dao" })
 @EnableTransactionManagement
-@PropertySource(value = {"classpath:abc.properties"})
+@PropertySource(value = {"classpath:properties/database.properties"})
 public class HibernateConfig {
 
     @Autowired
@@ -34,36 +34,27 @@ public class HibernateConfig {
     public DataSource dataSource() {
 
         HikariConfig config = new HikariConfig();
-        config.setDataSourceClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
-        //config.setDriverClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/springmvc");
-        config.setUsername(env.getProperty("hibernate.hikari.dataSource.username"));
-        config.setPassword(env.getProperty("hibernate.hikari.dataSource.password"));
+        config.setDataSourceClassName(env.getProperty("hikari.dataSourceClassName"));
+        config.setJdbcUrl(env.getProperty("hikari.dataSource.url"));
+        config.setUsername(env.getProperty("hikari.dataSource.username"));
+        config.setPassword(env.getProperty("hikari.dataSource.password"));
+        config.setMaximumPoolSize(Integer.parseInt(env.getProperty("hikari.maximumPoolSize")));
+        config.setIdleTimeout(Long.parseLong(env.getProperty("hikari.idleTimeout")));
+        config.setMinimumIdle(Integer.parseInt(env.getProperty("hikari.minimumIdle")));
         HikariDataSource dataSource = new HikariDataSource(config);
-
-
-//        dataSource.setMaximumPoolSize(Integer.parseInt(env.getProperty("hibernate.hikari.maximumPoolSize")));
-//        dataSource.setDataSourceClassName(env.getProperty("hibernate.hikari.dataSourceClassName"));
-       //dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/springmvc");
-//        dataSource.setUsername(env.getProperty("hibernate.hikari.dataSource.username"));
-//        dataSource.setPassword(env.getProperty("hibernate.hikari.dataSource.password"));
-        dataSource.addDataSourceProperty("dataSource","");
-        dataSource.addDataSourceProperty("jdbcUrl", env.getProperty("hibernate.hikari.dataSource.username"));
-        dataSource.addDataSourceProperty("dataSourceClassName", env.getProperty("hibernate.hikari.dataSource.password"));
-         return dataSource;
+        return dataSource;
     }
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan(new String[] { "com.mservice.sdk.dao.entity" });
+        sessionFactory.setPackagesToScan(new String[] { "com.coffeeinfinitive.dao.entity" });
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
     private Properties hibernateProperties() {
         Properties properties = new Properties();
-        //properties.put("connection.provider_class",env.getRequiredProperty("hibernate.connection.provider_class"));
         properties.put("hibernate.dialect", env.getRequiredProperty("hibernate.dialect"));
         properties.put("hibernate.show_sql", env.getRequiredProperty("hibernate.show_sql"));
         properties.put("hibernate.format_sql", env.getRequiredProperty("hibernate.format_sql"));
