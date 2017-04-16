@@ -1,4 +1,4 @@
-package com.mservice.sdk.controller;
+package com.coffeeinfinitive.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -1,4 +1,4 @@
-package com.mservice.sdk.model;
+package com.coffeeinfinitive.model;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;

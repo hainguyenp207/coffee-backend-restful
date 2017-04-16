@@ -1,9 +1,8 @@
-package com.mservice.sdk.config;
+package com.coffeeinfinitive.config;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
-import org.springframework.context.annotation.Configuration;
 
 import java.io.*;
 

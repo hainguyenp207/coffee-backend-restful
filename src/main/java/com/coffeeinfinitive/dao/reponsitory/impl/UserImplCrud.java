@@ -1,7 +1,7 @@
-package com.mservice.sdk.dao.reponsitory.impl;
+package com.coffeeinfinitive.dao.reponsitory.impl;
 
-import com.mservice.sdk.dao.enity.User;
-import com.mservice.sdk.dao.reponsitory.UserCrud;
+import com.coffeeinfinitive.dao.enity.User;
+import com.coffeeinfinitive.dao.reponsitory.UserCrud;
 import org.springframework.stereotype.Repository;
 
 /**

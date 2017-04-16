@@ -1,4 +1,4 @@
-package com.mservice.sdk.dao.enity;
+package com.coffeeinfinitive.dao.enity;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

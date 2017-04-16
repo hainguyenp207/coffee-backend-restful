@@ -1,6 +1,6 @@
-package com.mservice.sdk.dao.reponsitory;
+package com.coffeeinfinitive.dao.reponsitory;
 
-import com.mservice.sdk.dao.enity.User;
+import com.coffeeinfinitive.dao.enity.User;
 
 /**
  * Created by jinz on 4/16/17.

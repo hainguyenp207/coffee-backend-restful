@@ -1,4 +1,4 @@
-package com.mservice.sdk.validator;
+package com.coffeeinfinitive.validator;
 
 /**
  * Created by jinz on 4/16/17.

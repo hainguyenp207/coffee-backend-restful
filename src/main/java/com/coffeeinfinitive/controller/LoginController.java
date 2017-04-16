@@ -1,9 +1,9 @@
-package com.mservice.sdk.controller;
+package com.coffeeinfinitive.controller;
 
+import com.coffeeinfinitive.authentication.CustomAuthenticationProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.mservice.sdk.authentication.MomoAuthenticationProvider;
-import com.mservice.sdk.model.LoginForm;
+import com.coffeeinfinitive.model.LoginForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,7 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import sun.rmi.runtime.Log;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
 public class LoginController {
 
     @Autowired
-    MomoAuthenticationProvider authenticationProvider;
+    CustomAuthenticationProvider authenticationProvider;
 
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;

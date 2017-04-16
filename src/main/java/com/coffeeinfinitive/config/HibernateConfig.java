@@ -1,4 +1,4 @@
-package com.mservice.sdk.config;
+package com.coffeeinfinitive.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

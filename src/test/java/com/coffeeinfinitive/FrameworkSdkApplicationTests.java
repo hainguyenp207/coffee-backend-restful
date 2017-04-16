@@ -1,4 +1,4 @@
-package com.mservice.sdk;
+package com.coffeeinfinitive;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

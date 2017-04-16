@@ -1,6 +1,6 @@
-package com.mservice.sdk.config;
+package com.coffeeinfinitive.config;
 
-import com.mservice.sdk.authentication.MomoAuthenticationProvider;
+import com.coffeeinfinitive.authentication.CustomAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -14,7 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    private MomoAuthenticationProvider authProvider;
+    private CustomAuthenticationProvider authProvider;
 
 
     @Autowired
