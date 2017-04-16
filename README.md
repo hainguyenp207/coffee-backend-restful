@@ -1,13 +1,11 @@
-# Spring Boilerplate
-
 # Technologies
 * Spring Boot
 * Spring Security
 * Hibernate
 * Hikari
 # Introduce
-In this project
-I custom authentication provider of Spring Security
+In this project. <br/>
+I custom authentication provider of Spring Security. </br>
 We can use ajax to login (Return Json Object), 3rparty authentication
 
 # How to usage
