@@ -4,16 +4,25 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.naming.NamingException;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
 
@@ -22,7 +31,9 @@ import java.util.Properties;
  */
 
 @Configuration
-@ComponentScan({ "com.coffeeinfinitive.dao" })
+@EnableJpaRepositories(basePackages = "com.coffeeinfinitive.dao",
+        entityManagerFactoryRef = "entityManagerFactory",
+        transactionManagerRef = "transactionManager")
 @EnableTransactionManagement
 @PropertySource(value = {"classpath:properties/database.properties"})
 public class HibernateConfig {
@@ -30,30 +41,49 @@ public class HibernateConfig {
     @Autowired
     private Environment env;
 
+    @Value("${hikari.maximumPoolSize:10}")
+    private int maxPoolSize;
+
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "hikari")
+    public DataSourceProperties dataSourceProperties(){
+        return new DataSourceProperties();
+    }
+
     @Bean
     public DataSource dataSource() {
 
-        HikariConfig config = new HikariConfig();
-        config.setDataSourceClassName(env.getProperty("hikari.dataSourceClassName"));
-        config.setJdbcUrl(env.getProperty("hikari.dataSource.url"));
-        config.setUsername(env.getProperty("hikari.dataSource.username"));
-        config.setPassword(env.getProperty("hikari.dataSource.password"));
-        config.setMaximumPoolSize(Integer.parseInt(env.getProperty("hikari.maximumPoolSize")));
-        config.setIdleTimeout(Long.parseLong(env.getProperty("hikari.idleTimeout")));
-        config.setMinimumIdle(Integer.parseInt(env.getProperty("hikari.minimumIdle")));
-        HikariDataSource dataSource = new HikariDataSource(config);
+        DataSourceProperties dataSourceProperties = dataSourceProperties();
+        HikariDataSource dataSource = (HikariDataSource) DataSourceBuilder
+                .create(dataSourceProperties.getClassLoader())
+                .driverClassName(dataSourceProperties.getDriverClassName())
+                .url(dataSourceProperties.getUrl())
+                .username(dataSourceProperties.getUsername())
+                .password(dataSourceProperties.getPassword())
+                .type(HikariDataSource.class)
+                .build();
+        dataSource.setMaximumPoolSize(maxPoolSize);
         return dataSource;
     }
 
     @Bean
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan(new String[] { "com.coffeeinfinitive.dao.entity" });
-        sessionFactory.setHibernateProperties(hibernateProperties());
-        return sessionFactory;
+    public JpaVendorAdapter jpaVendorAdapter() {
+        HibernateJpaVendorAdapter hibernateJpaVendorAdapter = new HibernateJpaVendorAdapter();
+        return hibernateJpaVendorAdapter;
     }
-    private Properties hibernateProperties() {
+
+
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws NamingException {
+        LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
+        factoryBean.setDataSource(dataSource());
+        factoryBean.setPackagesToScan(new String[] { "com.coffeeinfinitive.dao.enity" });
+        factoryBean.setJpaVendorAdapter(jpaVendorAdapter());
+        factoryBean.setJpaProperties(jpaProperties());
+        return factoryBean;
+    }
+    private Properties jpaProperties() {
         Properties properties = new Properties();
         properties.put("hibernate.dialect", env.getRequiredProperty("hibernate.dialect"));
         properties.put("hibernate.show_sql", env.getRequiredProperty("hibernate.show_sql"));
@@ -66,9 +96,9 @@ public class HibernateConfig {
 
     @Bean
     @Autowired
-    public HibernateTransactionManager transactionManager(SessionFactory s) {
-        HibernateTransactionManager txManager = new HibernateTransactionManager();
-        txManager.setSessionFactory(s);
+    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+        JpaTransactionManager txManager = new JpaTransactionManager();
+        txManager.setEntityManagerFactory(emf);
         return txManager;
     }
 
