@@ -1,6 +1,6 @@
 package com.coffeeinfinitive.service;
 
-import com.coffeeinfinitive.dao.enity.User;
+import com.coffeeinfinitive.dao.entity.User;
 
 import java.util.List;
 
@@ -8,20 +8,6 @@ import java.util.List;
  * Created by jinz on 4/16/17.
  */
 
-public interface UserService {
-    User findById(Long id);
+public interface UserService  extends org.springframework.security.core.userdetails.UserDetailsService {
 
-    User findByName(String name);
-
-    void saveUser(User user);
-
-    void updateUser(User user);
-
-    void deleteUserById(Long id);
-
-    void deleteAllUsers();
-
-    List<User> findAllUsers();
-
-    boolean isUserExist(User user);;
 }
