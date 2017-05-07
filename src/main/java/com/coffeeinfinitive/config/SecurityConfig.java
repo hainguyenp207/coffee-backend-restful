@@ -25,7 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public static final String LOGIN_ENTRY_POINT = "/v1/api/login";
+    public static final String LOGIN_ENTRY_POINT = "/api/v1/login";
 
     @Autowired
     private UserService userService;

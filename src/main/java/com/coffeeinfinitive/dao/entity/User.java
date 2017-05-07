@@ -1,6 +1,6 @@
 package com.coffeeinfinitive.dao.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,35 +15,44 @@ import java.util.*;
  */
 @Entity
 @Table(name = "user")
-public class User implements Serializable, UserDetails {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+//@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="username")
+    public class User implements Serializable, UserDetails {
 
-    private String id;
     private String username;
     private String password;
     private String email;
     private String number;
     private boolean sex;
     private String address;
+    private String organizationId;
     private Set<Role> roles;
-
+    private Organization organization;
+    private Set<Activity> activitiesCreated;
+    private Set<Activity> activitiesUpdated;
     private Collection<SimpleGrantedAuthority> authorities;
     private Date lastPasswordResetDate;
-    public User(){
+    private Set<Comment> comments;
 
-        this.id = UUID.randomUUID().toString();
+    public User(){
     }
 
-    public User(String username, String email, String number, boolean sex, String address
-                ) {
+    public User(String username, String email, String number, boolean sex, String address,
+                Set<Role> roles, Organization organization) {
         this.username = username;
         this.email = email;
         this.number = number;
         this.sex = sex;
         this.address = address;
+        this.roles = roles;
+        this.organization = organization;
     }
-
+    @Id
     public String getUsername() {
         return username;
+    }
+    public void setUsername(String username) {
+        this.username = username;
     }
     @Transient
     @Override
@@ -67,34 +76,26 @@ public class User implements Serializable, UserDetails {
         return true;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     @Transient
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         authorities = new HashSet<SimpleGrantedAuthority>(roles.size());
         for (Role role : roles)
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
         return authorities;
     }
+    public void setAuthorities(Collection<SimpleGrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
-
+    @JsonProperty
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    @Id
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getEmail() {
@@ -141,8 +142,29 @@ public class User implements Serializable, UserDetails {
         return roles;
     }
 
+
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id",updatable = false,insertable = false)
+    @JsonBackReference
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    @Column(name = "organization_id")
+    public String getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
     }
 
     @JsonIgnore
@@ -153,5 +175,35 @@ public class User implements Serializable, UserDetails {
 
     public void setLastPasswordResetDate(Date lastPasswordResetDate) {
         this.lastPasswordResetDate = lastPasswordResetDate;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy")
+    @JsonIgnore
+    public Set<Activity> getActivitiesCreated() {
+        return activitiesCreated;
+    }
+
+    public void setActivitiesCreated(Set<Activity> activitiesCreated) {
+        this.activitiesCreated = activitiesCreated;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "lastUpdatedBy")
+    @JsonIgnore
+    public Set<Activity> getActivitiesUpdated() {
+        return activitiesUpdated;
+    }
+
+    public void setActivitiesUpdated(Set<Activity> activitiesUpdated) {
+        this.activitiesUpdated = activitiesUpdated;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    @JsonIgnore
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }

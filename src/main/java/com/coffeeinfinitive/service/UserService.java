@@ -9,5 +9,8 @@ import java.util.List;
  */
 
 public interface UserService  extends org.springframework.security.core.userdetails.UserDetailsService {
-
+    List<User> getAllUser();
+    User findUserById(String id);
+    User save(User user);
+    User updateUser(User user);
 }

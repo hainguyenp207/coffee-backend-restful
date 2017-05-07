@@ -1,5 +1,7 @@
 package com.coffeeinfinitive.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -36,7 +38,7 @@ public class Role implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
     public Set<User> getUsers() {
         return users;

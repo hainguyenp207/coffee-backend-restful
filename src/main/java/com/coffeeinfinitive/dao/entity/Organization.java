@@ -1,28 +1,33 @@
 package com.coffeeinfinitive.dao.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Created by jinz on 4/16/17.
+ * Created by jinz on 4/27/17.
  */
 @Entity
-@Table(name = "type_activity")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class TypeActivity {
 
+@Table(name = "organization")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Organization {
     private String id;
     private String name;
     private String description;
-    private Set<Activity> activities;
 
-    public TypeActivity(){
+    private Set<Activity> activities;
+    private Set<User> users;
+
+    public Organization(){
         this.id = UUID.randomUUID().toString();
+    }
+    public Organization(String name, String description){
+        this.id = UUID.randomUUID().toString();
+        this.name = name;
+        this.description = description;
     }
 
     @Id
@@ -49,13 +54,24 @@ public class TypeActivity {
     public void setDescription(String description) {
         this.description = description;
     }
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "typeActivity")
-    @JsonManagedReference(value = "type-activity")
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization")
+    @JsonManagedReference(value = "activity-organization")
     public Set<Activity> getActivities() {
         return activities;
     }
 
     public void setActivities(Set<Activity> activities) {
         this.activities = activities;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization")
+    @JsonManagedReference
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
     }
 }

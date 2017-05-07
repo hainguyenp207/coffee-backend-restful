@@ -1,19 +1,17 @@
 package com.coffeeinfinitive.dao.reponsitories;
 
+import com.coffeeinfinitive.dao.entity.Register;
 import com.coffeeinfinitive.dao.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 /**
  * Created by jinz on 4/16/17.
  */
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
-   @Query("select p from User p where p.username=:username")
-   User findUserByUsername(@Param("username") String username);
+public interface RegisterRepository extends JpaRepository<Register, String> {
+    @Query("select count(r) from Register r where r.userId =:userId and r.activityId = :activityId")
+    int checkUserRegisteredActivity(@Param("userId") String userId, @Param("activityId") String activityId);
 }

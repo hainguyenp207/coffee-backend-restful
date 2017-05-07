@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 /**
  * Created by jinz on 4/16/17.
@@ -27,5 +28,25 @@ public class UserServiceImpl implements UserService{
                     ResultCode.USER_NOT_FOUND.getMessageVn());
         }
         return user;
+    }
+
+    @Override
+    public List<User> getAllUser() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User findUserById(String id) {
+        return userRepository.findOne(id);
+    }
+
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User updateUser(User user) {
+        return userRepository.save(user);
     }
 }
