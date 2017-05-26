@@ -2,22 +2,24 @@ package com.coffeeinfinitive.api;
 
 import com.coffeeinfinitive.Utils;
 import com.coffeeinfinitive.constants.ResultCode;
-import com.coffeeinfinitive.dao.entity.Activity;
-import com.coffeeinfinitive.dao.entity.Comment;
-import com.coffeeinfinitive.dao.entity.Register;
-import com.coffeeinfinitive.dao.entity.User;
+import com.coffeeinfinitive.dao.entity.*;
 import com.coffeeinfinitive.exception.CoffeeSystemErrorException;
 import com.coffeeinfinitive.model.ActivityForm;
 import com.coffeeinfinitive.model.UserForm;
 import com.coffeeinfinitive.service.*;
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,12 +40,51 @@ public class ActivityController {
     @Autowired
     ValidatorService validatorService;
     @Autowired
+    OrganizationService organizationService;
+    @Autowired
     CommentService commentService;
 
     @GetMapping
-    public ResponseEntity<List<Activity>> getActivities() {
+    public ResponseEntity<List<?>> getActivities() {
+
         List<Activity> activities = activityService.getActivities();
-        return new ResponseEntity<List<Activity>>(activities, HttpStatus.OK);
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setName(activity.getName());
+            activityForms.add(activityForm);
+        });
+
+        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
+    }
+    @GetMapping
+    public ResponseEntity<List<?>> getActivitiesByPage(Pageable pageable) {
+
+        Page<Activity> activities = activityService.getActivitiesByPage(pageable);
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setName(activity.getName());
+            activityForms.add(activityForm);
+        });
+
+        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
+    }
+    @GetMapping("/count")
+    public ResponseEntity<?> getTotalRow(){
+        return new ResponseEntity<Object>(activityService.count(), HttpStatus.OK);
     }
 
     /*
@@ -51,6 +92,7 @@ public class ActivityController {
      */
     @GetMapping(path = "/{id}/registers")
     public ResponseEntity<?> getRegisters(@PathVariable("id") String id) {
+
         Activity activity = activityService.findActivityById(id);
         if (activity == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -100,7 +142,8 @@ public class ActivityController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addActivity(Authentication auth, @RequestBody ActivityForm activityForm) {
+    public ResponseEntity<?> addActivity(Authentication auth,
+                                         @RequestBody ActivityForm activityForm) {
         Utils<ActivityForm, Activity> convert = new Utils<>(Activity.class);
         Activity currentActivity = activityService.findActivityById(activityForm.getId());
         ResponseEntity responseEntity = validatorService.checkExistActivity(currentActivity);
@@ -111,10 +154,19 @@ public class ActivityController {
         User createdBy = userService.findUserById(auth.getPrincipal().toString());
         Activity newActivity = convert.ConvertObject(activityForm);
         // Init data;
+        String organzationId = activityForm.getOrganizationId();
+        Organization currentOrganization = organizationService.findOrgById(organzationId);
+        if(currentOrganization==null){
+            JsonObject result = new JsonObject();
+            result.addProperty("code", ResultCode.ACTIVITY_NOT_FOUND.getCode());
+            result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<>(result.toString(), HttpStatus.NOT_FOUND);
+        }
         newActivity.setCreatedDate();
         newActivity.setLastUpdatedDate();
         newActivity.setCreatedBy(createdBy);
         newActivity.setLastUpdatedBy(createdBy);
+        newActivity.setOrganization(currentOrganization);
         Activity savedActivity = activityService.save(newActivity);
         return new ResponseEntity<Activity>(savedActivity, HttpStatus.CREATED);
     }

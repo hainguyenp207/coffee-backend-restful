@@ -26,6 +26,7 @@ import java.util.List;
  * Created by jinz on 4/15/17.
  * Controller quản lý toàn bộ hoạt động
  */
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "/api/v1/registers")
 public class RegisterController {

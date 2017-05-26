@@ -3,6 +3,8 @@ package com.coffeeinfinitive.security;
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.exception.CoffeeAuthException;
+import com.coffeeinfinitive.model.UserForm;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,9 +27,20 @@ public class TokenAuthenticationService {
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
-    public void addJwtTokenToHeader(HttpServletResponse response,
-                                    UserDetails user) {
+    public void addJwtTokenToHeader(HttpServletResponse response, UserDetails user) {
+        response.addHeader("access-control-expose-headers",JWT_TOKEN_HEADER_PARAM);
         response.addHeader(JWT_TOKEN_HEADER_PARAM,TOKEN_PREFIX +" "+ jwtTokenUtil.generateToken(user));
+    }
+    public void addDataToBody(HttpServletResponse response,
+                                    User user) throws Exception{
+
+
+        UserForm userForm = new UserForm();
+        userForm.setName(user.getName());
+//        userForm.setRoles(user.getRoles());
+        userForm.setAddress(user.getAddress());
+        String body = new Gson().toJson(userForm,UserForm.class);
+        response.getWriter().write(body);
     }
 
     public Authentication generateAuthenticationFromRequest(HttpServletRequest request) {

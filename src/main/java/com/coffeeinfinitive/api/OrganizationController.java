@@ -26,6 +26,7 @@ import java.util.Set;
  * Created by jinz on 5/2/17.
  * CRUD cho org
  */
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "/api/v1/organizations")
 public class OrganizationController {
@@ -42,8 +43,17 @@ public class OrganizationController {
 
     // Lấy tất cả org
     @GetMapping()
-    public ResponseEntity<Iterable<Organization>> getAllOrg(){
-        return new ResponseEntity<Iterable<Organization>>(organizationService.getAllOrganization(), HttpStatus.OK);
+    public ResponseEntity<Iterable<?>> getAllOrg(){
+        Iterable<Organization> organizations = organizationService.getAllOrganization();
+        List<OrganizationForm> organizationsClient = new ArrayList<>();
+        organizations.forEach((organization)->{
+            OrganizationForm form = new OrganizationForm();
+            form.setId(organization.getId());
+            form.setName(organization.getName());
+            form.setDescription(organization.getDescription());
+            organizationsClient.add(form);
+        });
+        return new ResponseEntity<Iterable<?>>(organizationsClient, HttpStatus.OK);
     }
     @GetMapping(path = "/{id}")
     public ResponseEntity<Organization> getOrg(@PathVariable("id") String id){

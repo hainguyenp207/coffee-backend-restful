@@ -9,6 +9,8 @@ import com.coffeeinfinitive.exception.CoffeeAuthException;
 import com.coffeeinfinitive.service.RoleService;
 import com.coffeeinfinitive.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,16 @@ public class RoleServiceImpl implements RoleService{
     @Override
     public List<Role> getAllRole() {
         return roleRepository.findAll();
+    }
+
+    @Override
+    public Page<Role> getRoleByPage(Pageable pageable) {
+        return roleRepository.findAll(pageable);
+    }
+
+    @Override
+    public long count() {
+        return roleRepository.count();
     }
 
     @Override

@@ -7,6 +7,8 @@ import com.coffeeinfinitive.dao.reponsitories.OrganizationRepository;
 import com.coffeeinfinitive.service.ActivityService;
 import com.coffeeinfinitive.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,6 +31,16 @@ public class ActivityServiceImpl implements ActivityService{
     @Override
     public Activity findActivityById(String id) {
         return activityRepository.findOne(id);
+    }
+
+    @Override
+    public long count() {
+        return activityRepository.count();
+    }
+
+    @Override
+    public Page<Activity> getActivitiesByPage(Pageable pageable) {
+        return activityRepository.findAll(pageable);
     }
 
     @Override

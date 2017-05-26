@@ -21,31 +21,32 @@ import java.util.*;
 
     private String username;
     private String password;
+    private String name;
     private String email;
     private String number;
     private boolean sex;
     private String address;
     private String organizationId;
     private Set<Role> roles;
-    private Organization organization;
     private Set<Activity> activitiesCreated;
     private Set<Activity> activitiesUpdated;
     private Collection<SimpleGrantedAuthority> authorities;
     private Date lastPasswordResetDate;
     private Set<Comment> comments;
+    private Faculty faculty;
+    private Set<OrgUser> orgUsers = new HashSet<OrgUser>(0);
 
     public User(){
     }
 
     public User(String username, String email, String number, boolean sex, String address,
-                Set<Role> roles, Organization organization) {
+                Set<Role> roles) {
         this.username = username;
         this.email = email;
         this.number = number;
         this.sex = sex;
         this.address = address;
         this.roles = roles;
-        this.organization = organization;
     }
     @Id
     public String getUsername() {
@@ -133,29 +134,22 @@ import java.util.*;
     public UsernamePasswordAuthenticationToken toAuthenticationToken() {
         return new UsernamePasswordAuthenticationToken(username, password, getAuthorities());
     }
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_role", joinColumns = {
-            @JoinColumn(name = "user_id", nullable = false, updatable = false) },
-            inverseJoinColumns = { @JoinColumn(name = "role_id",
-                    nullable = false, updatable = false) })
-    public Set<Role> getRoles() {
-        return roles;
+
+    public String getName() {
+        return name;
     }
 
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id",updatable = false,insertable = false)
-    @JsonBackReference
-    public Organization getOrganization() {
-        return organization;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "pk.user")
+    public Set<OrgUser> getOrgUsers() {
+        return orgUsers;
     }
 
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
+    public void setOrgUsers(Set<OrgUser> orgUsers) {
+        this.orgUsers = orgUsers;
     }
 
     @Column(name = "organization_id")
@@ -205,5 +199,15 @@ import java.util.*;
 
     public void setComments(Set<Comment> comments) {
         this.comments = comments;
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "faculty_id",updatable = false,insertable = false)
+    public Faculty getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
     }
 }

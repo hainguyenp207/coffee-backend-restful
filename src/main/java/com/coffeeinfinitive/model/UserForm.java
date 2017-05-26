@@ -22,9 +22,35 @@ public class UserForm {
     private String number;
     private boolean sex;
     private String address;
+    private String name;
 //    @JsonProperty("organization_id")
     private String organizationId;
+    private String facultyId;
+    private String facultyName;
+    private String roleId;
+    private String roleName;
     private Set<Role> roles;
+
+    public UserForm(String username,String name, String email, String number, boolean sex, String address, Set<Role> roles) {
+        this.username = username;
+        this.email = email;
+        this.number = number;
+        this.sex = sex;
+        this.address = address;
+        this.roles = roles;
+        this.name = name;
+    }
+    public UserForm(){
+
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getUsername() {
         return username;
@@ -88,5 +114,22 @@ public class UserForm {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+
+    public String getFacultyId() {
+        return facultyId;
+    }
+
+    public void setFacultyId(String facultyId) {
+        this.facultyId = facultyId;
+    }
+
+    public String getFacultyName() {
+        return facultyName;
+    }
+
+    public void setFacultyName(String facultyName) {
+        this.facultyName = facultyName;
     }
 }

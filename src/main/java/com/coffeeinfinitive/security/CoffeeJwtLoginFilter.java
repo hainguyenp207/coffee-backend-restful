@@ -54,7 +54,13 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
                     throw new CoffeeAuthException(ResultCode.PASSWORD_INVALID_REQUIRED.getCode(), ResultCode.PASSWORD_INVALID_REQUIRED.getMessageVn());
                 }
                 final UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword(),null);
-                return getAuthenticationManager().authenticate(loginToken);
+                try{
+                 return getAuthenticationManager().authenticate(loginToken);
+                }catch (CoffeeAuthException e){
+                    System.out.println("Code" + e.getCode());
+                    return null;
+                }
+
 
             }catch (JsonParseException e){
                 throw new CoffeeAuthException(ResultCode.PARSE_JSON_TO_OBJECT.getCode(), ResultCode.PARSE_JSON_TO_OBJECT.getMessageVn());
@@ -73,6 +79,12 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
         final UserDetails authenticatedUser = userService.loadUserByUsername(auth.getName());
 
         tokenAuthenticationService.addJwtTokenToHeader(res, authenticatedUser);
+        User currentUser = userService.findUserById(auth.getName());
+        try {
+            tokenAuthenticationService.addDataToBody(res, currentUser);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(auth.getPrincipal(),auth.getCredentials(),authenticatedUser.getAuthorities()));
     }
     @Override

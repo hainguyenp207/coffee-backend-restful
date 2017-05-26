@@ -3,6 +3,7 @@ package com.coffeeinfinitive.dao.entity;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,9 +18,8 @@ public class Organization {
     private String id;
     private String name;
     private String description;
-
     private Set<Activity> activities;
-    private Set<User> users;
+    private Set<OrgUser> orgUsers = new HashSet<>(0);
 
     public Organization(){
         this.id = UUID.randomUUID().toString();
@@ -56,7 +56,6 @@ public class Organization {
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization")
-    @JsonManagedReference(value = "activity-organization")
     public Set<Activity> getActivities() {
         return activities;
     }
@@ -65,13 +64,12 @@ public class Organization {
         this.activities = activities;
     }
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization")
-    @JsonManagedReference
-    public Set<User> getUsers() {
-        return users;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "pk.organization")
+    public Set<OrgUser> getOrgUsers() {
+        return orgUsers;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users = users;
+    public void setOrgUsers(Set<OrgUser> orgUsers) {
+        this.orgUsers = orgUsers;
     }
 }

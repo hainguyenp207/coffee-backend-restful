@@ -12,13 +12,13 @@ import java.util.UUID;
  * Created by jinz on 4/16/17.
  */
 @Entity
-@Table(name = "role")
-public class Role implements Serializable {
+@Table(name = "Faculty")
+public class Faculty implements Serializable {
     private String id;
     private String name;
-    private Set<OrgUser> orgUsers = new HashSet<>(0);
+    private Set<User> users = new HashSet<>(0);
 
-    public Role() {
+    public Faculty() {
         this.id = UUID.randomUUID().toString();
     }
 
@@ -39,12 +39,12 @@ public class Role implements Serializable {
         this.name = name;
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "pk.role")
-    public Set<OrgUser> getOrgUsers() {
-        return orgUsers;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "faculty")
+    public Set<User> getUsers() {
+        return users;
     }
 
-    public void setOrgUsers(Set<OrgUser> orgUsers) {
-        this.orgUsers = orgUsers;
+    public void setUsers(Set<User> users) {
+        this.users = users;
     }
 }

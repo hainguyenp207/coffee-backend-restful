@@ -7,6 +7,8 @@ import com.coffeeinfinitive.dao.reponsitories.CommentRepository;
 import com.coffeeinfinitive.service.ActivityService;
 import com.coffeeinfinitive.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -21,6 +23,15 @@ public class CommentServiceImpl implements CommentService{
     @Autowired
     private CommentRepository commentRepository;
 
+    @Override
+    public Page<Comment> getCommentsByPage(Pageable pageable) {
+        return commentRepository.findAll(pageable);
+    }
+
+    @Override
+    public long count() {
+        return commentRepository.count();
+    }
 
     @Override
     public List<Comment> getAllComment() {

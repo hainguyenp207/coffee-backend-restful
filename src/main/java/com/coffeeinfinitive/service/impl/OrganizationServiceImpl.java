@@ -7,6 +7,8 @@ import com.coffeeinfinitive.dao.reponsitories.RoleRepository;
 import com.coffeeinfinitive.service.OrganizationService;
 import com.coffeeinfinitive.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -24,6 +26,16 @@ public class OrganizationServiceImpl implements OrganizationService{
     @Override
     public Iterable<Organization> getAllOrganization() {
         return organizationRepository.findAll();
+    }
+
+    @Override
+    public Page<Organization> getOrganizationsByPage(Pageable pageable) {
+        return organizationRepository.findAll(pageable);
+    }
+
+    @Override
+    public long count() {
+        return organizationRepository.count();
     }
 
     @Override

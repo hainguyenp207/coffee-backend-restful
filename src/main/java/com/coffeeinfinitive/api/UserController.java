@@ -28,6 +28,7 @@ import java.util.Set;
  * Created by jinz on 5/2/17.
  * CRUD cho user
  */
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "/api/v1/users")
 public class UserController {
@@ -46,18 +47,36 @@ public class UserController {
     @Autowired
     ValidatorService validatorService;
 
+
+    @GetMapping("/count")
+    public ResponseEntity<?> getTotalRow(){
+     return new ResponseEntity<Object>(userService.count(), HttpStatus.OK);
+    }
     // Lấy tất cả user
     @GetMapping()
-    public ResponseEntity<List<User>> getAllUser(){
-        return new ResponseEntity<List<User>>(userService.getAllUser(), HttpStatus.OK);
+    public ResponseEntity<List<?>> getAllUser(){
+        List<User> users = userService.getAllUser();
+        List<UserForm> usersModel = new ArrayList<>();
+        users.forEach(user->{
+            UserForm userForm = new UserForm(user.getUsername(),user.getName(),
+                    user.getEmail(),user.getNumber(), user.isSex(),
+                    user.getAddress(),null );
+            usersModel.add(userForm);
+        });
+        return new ResponseEntity<List<?>>(usersModel, HttpStatus.OK);
     }
+
     @GetMapping(path = "/{id}")
-    public ResponseEntity<User> getUser(@PathVariable("id") String id){
+    public ResponseEntity<?> getUser(@PathVariable("id") String id){
         User user = userService.findUserById(id);
         if(user==null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+        UserForm userClient = new UserForm();
+        userClient.setName(user.getName());
+        userClient.setAddress(user.getAddress());
+        userClient.setUsername(user.getUsername());
+        return new ResponseEntity<>(userClient, HttpStatus.OK);
     }
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> addUser(@RequestBody UserForm userForm){
@@ -116,15 +135,15 @@ public class UserController {
             result.addProperty("message", ResultCode.USER_NOT_FOUND.getMessageVn());
             return new ResponseEntity<Object>(result.toString(),HttpStatus.CONFLICT);
         }
-        Set<Role> roles = user.getRoles();
-        if(roles !=null && !roles.isEmpty()){
-            List<Role> roleList =  new ArrayList<>();
-            roleList.addAll(roles);
-            JsonObject validateRole = validatorService.validatorRole(roleList);
-            if(validateRole!=null){
-                return new ResponseEntity<Object>(validateRole.toString(), HttpStatus.BAD_REQUEST);
-            }
-        }
+//        Set<Role> roles = user.getRoles();
+//        if(roles !=null && !roles.isEmpty()){
+//            List<Role> roleList =  new ArrayList<>();
+//            roleList.addAll(roles);
+//            JsonObject validateRole = validatorService.validatorRole(roleList);
+//            if(validateRole!=null){
+//                return new ResponseEntity<Object>(validateRole.toString(), HttpStatus.BAD_REQUEST);
+//            }
+//        }
 
         if(user.getPassword()!=null || !user.getPassword().isEmpty())
             user.setPassword(passwordEncoder.encode(user.getPassword()));

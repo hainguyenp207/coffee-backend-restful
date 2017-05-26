@@ -24,6 +24,7 @@ import java.util.Set;
  * Created by jinz on 4/15/17.
  * Controller quản lý toàn bộ hoạt động
  */
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "/api/v1/comments")
 public class CommentController {

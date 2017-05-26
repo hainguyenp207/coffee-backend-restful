@@ -7,6 +7,8 @@ import com.coffeeinfinitive.dao.reponsitories.RegisterRepository;
 import com.coffeeinfinitive.service.ActivityService;
 import com.coffeeinfinitive.service.RegisterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -21,6 +23,15 @@ public class RegisterServiceImpl implements RegisterService{
     @Autowired
     private RegisterRepository registerRepository;
 
+    @Override
+    public Page<Register> getRegistersByPage(Pageable pageable) {
+        return registerRepository.findAll(pageable);
+    }
+
+    @Override
+    public long count() {
+        return registerRepository.count();
+    }
 
     @Override
     public List<Register> getRegisters() {
