@@ -22,8 +22,24 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "org_user")
+@AssociationOverrides({
+        @AssociationOverride(name = "pk.user",
+                joinColumns = @JoinColumn(name = "user_id")),
+        @AssociationOverride(name = "pk.organization",
+                joinColumns = @JoinColumn(name = "organization_id")),
+        @AssociationOverride(name = "pk.role",
+                joinColumns = @JoinColumn(name = "role_id"))})
 public class OrgUser implements Serializable {
 
+    private OrgUserId pk = new OrgUserId();
+
+    public OrgUser() {
+    }
+
+    @EmbeddedId
+    public OrgUserId getPk() {
+        return pk;
+    }
 
     public void setPk(OrgUserId pk) {
         this.pk = pk;
@@ -54,5 +70,24 @@ public class OrgUser implements Serializable {
 
     public void setRole(Role role) {
         getPk().setRole(role);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        OrgUser that = (OrgUser) o;
+
+        if (getPk() != null ? !getPk().equals(that.getPk())
+                : that.getPk() != null)
+            return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        return (getPk() != null ? getPk().hashCode() : 0);
     }
 }

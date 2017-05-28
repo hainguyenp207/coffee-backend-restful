@@ -1,6 +1,7 @@
 package com.coffeeinfinitive.config;
 
 import com.coffeeinfinitive.security.*;
+import com.coffeeinfinitive.service.UserOrgService;
 import com.coffeeinfinitive.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,10 +33,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserOrgService userOrgService;
+
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
     private CoffeeRestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
+    @Autowired
+    CoffeeAuthenticationProvider coffeeAuthenticationProvider;
+
 
     @Autowired
     private TokenAuthenticationService tokenAuthenticationService;
@@ -49,6 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.inMemoryAuthentication()
                 .withUser("admin1").password("admin").roles("ADMIN");
 
+        auth.authenticationProvider(coffeeAuthenticationProvider);
     }
 
     @Override
@@ -72,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 // We filter the api/login requests
                 .addFilterBefore(new CoffeeJwtLoginFilter(LOGIN_ENTRY_POINT,tokenAuthenticationService,
-                                userService, authenticationManager(), objectMapper),
+                                userService, authenticationManager(), userOrgService, objectMapper),
                         UsernamePasswordAuthenticationFilter.class)
                 // And filter other requests to check the presence of JWT in header
                 .addFilterBefore(new CoffeeJwtAuthenticationFilter(objectMapper, tokenAuthenticationService),
@@ -83,19 +91,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-    @Bean
-    protected BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
-    @Override
-    protected UserDetailsService userDetailsService() {
-        return userService;
-    }
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
-    }
+
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

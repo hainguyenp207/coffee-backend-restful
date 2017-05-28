@@ -21,8 +21,15 @@ public class OrganizationForm {
         this.id = UUID.randomUUID().toString();
     }
 
-    public OrganizationForm(String name, String description) {
+    public OrganizationForm(boolean genernateId, String id, String name) {
+        if(genernateId)
         this.id = UUID.randomUUID().toString();
+        else
+            this.id = id;
+        this.name = name;
+    }
+
+    public OrganizationForm(String name, String description) {
         this.name = name;
         this.description = description;
     }

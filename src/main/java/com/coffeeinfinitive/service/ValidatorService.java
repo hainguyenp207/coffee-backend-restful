@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 public interface ValidatorService {
-    JsonObject validatorRole(List<Role> roles);
+    JsonObject validatorRole(List<String> roles);
     ResponseEntity checkExistActivity(Activity activity);
     ResponseEntity checkExistRegister(Register register);
 }

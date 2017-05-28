@@ -5,6 +5,7 @@ import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.Role;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.model.UserForm;
+import com.coffeeinfinitive.model.UserOrgForm;
 import com.coffeeinfinitive.service.OrganizationService;
 import com.coffeeinfinitive.service.RoleService;
 import com.coffeeinfinitive.service.UserService;
@@ -93,12 +94,14 @@ public class UserController {
             return new ResponseEntity<Object>(result.toString(),HttpStatus.CONFLICT);
         }
 
-        Set<Role> roles = userForm.getRoles();
+        Set<UserOrgForm> userOrgForms = userForm.getUserOrgForm();
 
-        if(roles !=null && !roles.isEmpty()){
-            List<Role> roleList =  new ArrayList<>();
-            roleList.addAll(roles);
-            JsonObject validateRole = validatorService.validatorRole(roleList);
+        if(userOrgForms !=null && !userOrgForms.isEmpty()){
+            List<String> roleIds = new ArrayList<>();
+            userOrgForms.forEach(userOrgForm -> {
+                roleIds.add(userOrgForm.getRoleId());
+            });
+            JsonObject validateRole = validatorService.validatorRole(roleIds);
             if(validateRole!=null){
                 return new ResponseEntity<Object>(validateRole.toString(), HttpStatus.BAD_REQUEST);
             }

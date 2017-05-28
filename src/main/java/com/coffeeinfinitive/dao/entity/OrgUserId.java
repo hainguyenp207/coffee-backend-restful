@@ -1,6 +1,7 @@
 package com.coffeeinfinitive.dao.entity;
 
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 
 import java.io.Serializable;
@@ -19,7 +20,7 @@ public class OrgUserId implements Serializable {
     public User getUser() {
         return user;
     }
-    @ManyToOne
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -32,11 +33,37 @@ public class OrgUserId implements Serializable {
         this.organization = organization;
     }
 
+    @ManyToOne
     public Role getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
+    public void setRole(Role role){
         this.role = role;
     }
+
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        OrgUserId that = (OrgUserId) o;
+
+        if ( user!= null ? !user.equals(that.user) : that.user != null) return false;
+        if (organization != null ? !organization.equals(that.organization) : that.organization != null)
+            return false;
+        if (role != null ? !role.equals(that.role) : that.role != null)
+            return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = (user != null ? user.hashCode() : 0);
+        result = 31 * result + (organization != null ? organization.hashCode() : 0);
+        result = 32 * result + (role != null ? role.hashCode() : 0);
+        return result;
+    }
+
 }

@@ -44,27 +44,26 @@ public class ActivityController {
     @Autowired
     CommentService commentService;
 
+//    @GetMapping
+//    public ResponseEntity<List<?>> getActivities() {
+//        List<Activity> activities = activityService.getActivities();
+//        List<ActivityForm> activityForms = new ArrayList<>();
+//        activities.forEach(activity -> {
+//            ActivityForm activityForm = new ActivityForm();
+//            activityForm.setConfirmed(activity.isConfirmed());
+//            activityForm.setActivityTypeId(activity.getActivityTypeId());
+//            activityForm.setStartDate(activity.getStartDate());
+//            activityForm.setEndDate(activity.getEndDate());
+//            activityForm.setCreatedDate(activity.getCreatedDate());
+//            activityForm.setId(activity.getId());
+//            activityForm.setName(activity.getName());
+//            activityForms.add(activityForm);
+//        });
+//
+//        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
+//    }
     @GetMapping
-    public ResponseEntity<List<?>> getActivities() {
-
-        List<Activity> activities = activityService.getActivities();
-        List<ActivityForm> activityForms = new ArrayList<>();
-        activities.forEach(activity -> {
-            ActivityForm activityForm = new ActivityForm();
-            activityForm.setConfirmed(activity.isConfirmed());
-            activityForm.setActivityTypeId(activity.getActivityTypeId());
-            activityForm.setStartDate(activity.getStartDate());
-            activityForm.setEndDate(activity.getEndDate());
-            activityForm.setCreatedDate(activity.getCreatedDate());
-            activityForm.setId(activity.getId());
-            activityForm.setName(activity.getName());
-            activityForms.add(activityForm);
-        });
-
-        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
-    }
-    @GetMapping
-    public ResponseEntity<List<?>> getActivitiesByPage(Pageable pageable) {
+    public List<ActivityForm> getActivitiesByPage(Pageable pageable) {
 
         Page<Activity> activities = activityService.getActivitiesByPage(pageable);
         List<ActivityForm> activityForms = new ArrayList<>();
@@ -72,6 +71,7 @@ public class ActivityController {
             ActivityForm activityForm = new ActivityForm();
             activityForm.setConfirmed(activity.isConfirmed());
             activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setOrganization(activity.getOrganization());
             activityForm.setStartDate(activity.getStartDate());
             activityForm.setEndDate(activity.getEndDate());
             activityForm.setCreatedDate(activity.getCreatedDate());
@@ -80,7 +80,7 @@ public class ActivityController {
             activityForms.add(activityForm);
         });
 
-        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
+        return activityForms;
     }
     @GetMapping("/count")
     public ResponseEntity<?> getTotalRow(){
@@ -152,7 +152,7 @@ public class ActivityController {
         }
 
         User createdBy = userService.findUserById(auth.getPrincipal().toString());
-        Activity newActivity = convert.ConvertObject(activityForm);
+        Activity newActivity = new Activity();
         // Init data;
         String organzationId = activityForm.getOrganizationId();
         Organization currentOrganization = organizationService.findOrgById(organzationId);
@@ -162,13 +162,18 @@ public class ActivityController {
             result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
             return new ResponseEntity<>(result.toString(), HttpStatus.NOT_FOUND);
         }
+        newActivity.setOrganizationId(activityForm.getOrganizationId());
+        newActivity.setDescription(activityForm.getDescription());
+        newActivity.setStartDate(activityForm.getStartDate());
+        newActivity.setEndDate(activityForm.getEndDate());
+        newActivity.setActivityTypeId(activityForm.getActivityTypeId());
         newActivity.setCreatedDate();
         newActivity.setLastUpdatedDate();
         newActivity.setCreatedBy(createdBy);
         newActivity.setLastUpdatedBy(createdBy);
         newActivity.setOrganization(currentOrganization);
         Activity savedActivity = activityService.save(newActivity);
-        return new ResponseEntity<Activity>(savedActivity, HttpStatus.CREATED);
+        return new ResponseEntity<Activity>(newActivity, HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})

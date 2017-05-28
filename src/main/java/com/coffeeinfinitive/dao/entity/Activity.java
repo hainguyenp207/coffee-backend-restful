@@ -90,7 +90,7 @@ public class Activity implements Serializable{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false,insertable = false,updatable = false)
-    @JsonBackReference(value = "activity-organization")
+    @JsonManagedReference
     public Organization getOrganization() {
         return organization;
     }

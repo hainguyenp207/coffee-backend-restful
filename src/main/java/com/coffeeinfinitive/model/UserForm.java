@@ -1,9 +1,11 @@
 package com.coffeeinfinitive.model;
 
 import com.coffeeinfinitive.dao.entity.Activity;
+import com.coffeeinfinitive.dao.entity.OrgUser;
 import com.coffeeinfinitive.dao.entity.Organization;
 import com.coffeeinfinitive.dao.entity.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
@@ -26,10 +28,11 @@ public class UserForm {
 //    @JsonProperty("organization_id")
     private String organizationId;
     private String facultyId;
-    private String facultyName;
-    private String roleId;
-    private String roleName;
-    private Set<Role> roles;
+    private Set<OrgUser> orgUsers;
+    private Set<UserOrgForm> userOrgForm;
+
+    @SerializedName("permissions")
+    private Set<UserOrgDetailForm> userOrgDetailForms;
 
     public UserForm(String username,String name, String email, String number, boolean sex, String address, Set<Role> roles) {
         this.username = username;
@@ -37,7 +40,6 @@ public class UserForm {
         this.number = number;
         this.sex = sex;
         this.address = address;
-        this.roles = roles;
         this.name = name;
     }
     public UserForm(){
@@ -108,14 +110,14 @@ public class UserForm {
         this.organizationId = organizationId;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+
+    public Set<OrgUser> getOrgUsers() {
+        return orgUsers;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setOrgUsers(Set<OrgUser> orgUsers) {
+        this.orgUsers = orgUsers;
     }
-
 
     public String getFacultyId() {
         return facultyId;
@@ -125,11 +127,19 @@ public class UserForm {
         this.facultyId = facultyId;
     }
 
-    public String getFacultyName() {
-        return facultyName;
+    public Set<UserOrgForm> getUserOrgForm() {
+        return userOrgForm;
     }
 
-    public void setFacultyName(String facultyName) {
-        this.facultyName = facultyName;
+    public void setUserOrgForm(Set<UserOrgForm> userOrgForm) {
+        this.userOrgForm = userOrgForm;
+    }
+
+    public Set<UserOrgDetailForm> getUserOrgDetailForms() {
+        return userOrgDetailForms;
+    }
+
+    public void setUserOrgDetailForms(Set<UserOrgDetailForm> userOrgDetailForms) {
+        this.userOrgDetailForms = userOrgDetailForms;
     }
 }

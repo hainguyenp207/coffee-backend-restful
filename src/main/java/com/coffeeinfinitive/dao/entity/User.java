@@ -16,8 +16,9 @@ import java.util.*;
 @Entity
 @Table(name = "user")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
 //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="username")
-    public class User implements Serializable, UserDetails {
+    public class User implements Serializable {
 
     private String username;
     private String password;
@@ -27,10 +28,9 @@ import java.util.*;
     private boolean sex;
     private String address;
     private String organizationId;
-    private Set<Role> roles;
     private Set<Activity> activitiesCreated;
     private Set<Activity> activitiesUpdated;
-    private Collection<SimpleGrantedAuthority> authorities;
+    private Collection<SimpleGrantedAuthority> authorities = new HashSet<>();
     private Date lastPasswordResetDate;
     private Set<Comment> comments;
     private Faculty faculty;
@@ -39,14 +39,12 @@ import java.util.*;
     public User(){
     }
 
-    public User(String username, String email, String number, boolean sex, String address,
-                Set<Role> roles) {
+    public User(String username, String email, String number, boolean sex, String address) {
         this.username = username;
         this.email = email;
         this.number = number;
         this.sex = sex;
         this.address = address;
-        this.roles = roles;
     }
     @Id
     public String getUsername() {
@@ -54,40 +52,6 @@ import java.util.*;
     }
     public void setUsername(String username) {
         this.username = username;
-    }
-    @Transient
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-    @Transient
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-    @Transient
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Transient
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Transient
-    @Override
-    @JsonIgnore
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        authorities = new HashSet<SimpleGrantedAuthority>(roles.size());
-        for (Role role : roles)
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-        return authorities;
-    }
-    public void setAuthorities(Collection<SimpleGrantedAuthority> authorities) {
-        this.authorities = authorities;
     }
 
     @JsonIgnore
@@ -131,9 +95,6 @@ import java.util.*;
         this.address = address;
     }
 
-    public UsernamePasswordAuthenticationToken toAuthenticationToken() {
-        return new UsernamePasswordAuthenticationToken(username, password, getAuthorities());
-    }
 
     public String getName() {
         return name;
@@ -173,6 +134,7 @@ import java.util.*;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy")
     @JsonIgnore
+    @Transient
     public Set<Activity> getActivitiesCreated() {
         return activitiesCreated;
     }
@@ -183,6 +145,7 @@ import java.util.*;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "lastUpdatedBy")
     @JsonIgnore
+    @Transient
     public Set<Activity> getActivitiesUpdated() {
         return activitiesUpdated;
     }
@@ -193,6 +156,7 @@ import java.util.*;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
     @JsonIgnore
+    @Transient
     public Set<Comment> getComments() {
         return comments;
     }
@@ -210,4 +174,6 @@ import java.util.*;
     public void setFaculty(Faculty faculty) {
         this.faculty = faculty;
     }
+
+
 }

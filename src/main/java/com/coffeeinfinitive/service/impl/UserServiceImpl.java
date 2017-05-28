@@ -22,15 +22,6 @@ import java.util.List;
 public class UserServiceImpl implements UserService{
     @Autowired
     private UserRepository userRepository;
-    @Override
-    public UserDetails loadUserByUsername(String s){
-        final User user = userRepository.findUserByUsername(s);
-        if(user == null){
-            throw new CoffeeAuthException(ResultCode.USER_NOT_FOUND.getCode(),
-                    ResultCode.USER_NOT_FOUND.getMessageVn());
-        }
-        return user;
-    }
 
     @Override
     public Page<User> getUsersByPage(Pageable pageable) {

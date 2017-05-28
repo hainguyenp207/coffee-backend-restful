@@ -56,6 +56,7 @@ public class Organization {
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "organization")
+    @JsonBackReference
     public Set<Activity> getActivities() {
         return activities;
     }

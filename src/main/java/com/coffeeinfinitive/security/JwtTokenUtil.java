@@ -88,9 +88,9 @@ public final class JwtTokenUtil implements Serializable {
             throw new CoffeeAuthException(ResultCode.TOKEN_EXPIRED.getCode(), ResultCode.TOKEN_EXPIRED.getMessageVn());
         }
         String userId = parseToken(token).getSubject();
-        User user = (User) userService.loadUserByUsername(userId);
+        User user =  userService.findUserById(userId);
         if(user==null)
-            throw new CoffeeAuthException(ResultCode.INVALID_TOKEN.getCode(), ResultCode.INVALID_TOKEN.getMessageVn());
+            throw new CoffeeAuthException(ResultCode.USER_NOT_FOUND.getCode(), ResultCode.USER_NOT_FOUND.getMessageVn());
         return user;
 
     }
@@ -141,9 +141,9 @@ public final class JwtTokenUtil implements Serializable {
         return (AUDIENCE_TABLET.equals(audience) || AUDIENCE_MOBILE.equals(audience));
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
+        claims.put(CLAIM_KEY_USERNAME, user.getUsername());
         claims.put(CLAIM_KEY_CREATED, new Date());
         return generateToken(claims);
     }

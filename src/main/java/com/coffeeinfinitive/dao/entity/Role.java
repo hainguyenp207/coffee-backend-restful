@@ -39,7 +39,7 @@ public class Role implements Serializable {
         this.name = name;
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "pk.role")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "pk.role")
     public Set<OrgUser> getOrgUsers() {
         return orgUsers;
     }

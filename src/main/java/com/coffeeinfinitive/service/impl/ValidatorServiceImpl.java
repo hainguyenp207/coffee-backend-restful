@@ -26,12 +26,12 @@ public class ValidatorServiceImpl implements ValidatorService{
     private RoleRepository roleRepository;
 
     @Override
-    public JsonObject validatorRole(List<Role> roles) {
+    public JsonObject validatorRole(List<String> rolesId) {
         JsonArray errors = new JsonArray();
-        for(Role role: roles){
-            if(roleRepository.findOne(role.getId())==null){
+        for(String roleId: rolesId){
+            if(roleRepository.findOne(roleId)==null){
                 JsonObject error = new JsonObject();
-                error.addProperty("param", role.getId());
+                error.addProperty("param",roleId);
                 error.addProperty("message", ResultCode.ROLE_NOT_FOUND.getMessageVn());
                 errors.add(error);
             }

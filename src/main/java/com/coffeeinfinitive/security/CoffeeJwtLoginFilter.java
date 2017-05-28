@@ -1,11 +1,14 @@
 package com.coffeeinfinitive.security;
 
 import com.coffeeinfinitive.constants.ResultCode;
+import com.coffeeinfinitive.dao.entity.OrgUser;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.exception.CoffeeAuthException;
+import com.coffeeinfinitive.service.UserOrgService;
 import com.coffeeinfinitive.service.UserService;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,7 +17,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
 import javax.servlet.FilterChain;
@@ -22,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Created by jinz on 4/27/17.
@@ -30,13 +33,15 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
 
     private final TokenAuthenticationService tokenAuthenticationService;
     private final UserService userService;
+    private final UserOrgService userOrgService;
     private final ObjectMapper mapper;
 
     public CoffeeJwtLoginFilter(String urlMapping, TokenAuthenticationService tokenAuthenticationService,
-                                UserService userService, AuthenticationManager authenticationManager, ObjectMapper mapper) {
+                                UserService userService, AuthenticationManager authenticationManager, UserOrgService userOrgService, ObjectMapper mapper) {
         super(urlMapping);
         this.tokenAuthenticationService = tokenAuthenticationService;
         this.userService = userService;
+        this.userOrgService = userOrgService;
         this.mapper = mapper;
         setAuthenticationManager(authenticationManager);
     }
@@ -76,16 +81,18 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
             HttpServletResponse res, FilterChain chain,
             Authentication auth) throws IOException, ServletException {
 
-        final UserDetails authenticatedUser = userService.loadUserByUsername(auth.getName());
-
+        final User authenticatedUser = userService.findUserById(auth.getName());
+        final Set<OrgUser> orgUsers = userOrgService.getUserOrgByUsername(auth.getName());
+        res.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         tokenAuthenticationService.addJwtTokenToHeader(res, authenticatedUser);
         User currentUser = userService.findUserById(auth.getName());
         try {
-            tokenAuthenticationService.addDataToBody(res, currentUser);
+            tokenAuthenticationService.addDataToBody(res, currentUser,orgUsers);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(auth.getPrincipal(),auth.getCredentials(),authenticatedUser.getAuthorities()));
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(auth.getPrincipal(),auth.getCredentials(),
+               null));
     }
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
@@ -103,6 +110,6 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
             result.addProperty("message", ResultCode.BAD_CREDENTIAL.getMessageVn());
         }else
         result.addProperty("message", e.getMessage());
-        mapper.writeValue(response.getWriter(), result.toString());
+        new Gson().toJson(result,response.getWriter());
     }
 }
