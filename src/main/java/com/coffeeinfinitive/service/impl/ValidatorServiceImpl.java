@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -74,5 +76,30 @@ public class ValidatorServiceImpl implements ValidatorService{
             result.addProperty("message", ResultCode.REGISTER_EXIST.getMessageVn());
             return new ResponseEntity<>(result.toString(),HttpStatus.CONFLICT);
         }
+    }
+
+    @Override
+    public ResponseEntity<?> validateForm(BindingResult result) {
+        JsonObject data = new JsonObject();
+
+        JsonArray errorsJS = new JsonArray();
+        if(result.hasErrors()){
+            result.getAllErrors().forEach((error)->{
+                if(error instanceof FieldError){
+                    JsonObject errorJS = new JsonObject();
+                    errorJS.addProperty("field", ((FieldError) error).getField());
+                    errorJS.addProperty("message", ((FieldError) error).getDefaultMessage());
+                    errorsJS.add(errorJS);
+                }
+            });
+
+        }
+        if(errorsJS.size()>0){
+            data.addProperty("code", ResultCode.BAD_REQUEST.getCode());
+            data.addProperty("message", ResultCode.BAD_REQUEST.getMessageVn());
+            data.add("detail", errorsJS);
+            return new ResponseEntity<Object>(data.toString(), HttpStatus.BAD_REQUEST);
+        }
+        return null;
     }
 }

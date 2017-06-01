@@ -16,8 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.Binding;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -141,39 +144,56 @@ public class ActivityController {
         return new ResponseEntity<>(activity, HttpStatus.OK);
     }
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> addActivity(Authentication auth,
-                                         @RequestBody ActivityForm activityForm) {
-        Utils<ActivityForm, Activity> convert = new Utils<>(Activity.class);
+                                         @Valid @RequestBody ActivityForm activityForm,
+                                         BindingResult bindingResult) {
+
+        ResponseEntity response = validatorService.validateForm(bindingResult);
+        if(response!=null){
+            return response;
+        }
+
         Activity currentActivity = activityService.findActivityById(activityForm.getId());
         ResponseEntity responseEntity = validatorService.checkExistActivity(currentActivity);
         if (responseEntity.getStatusCode().value() == 409) {
             return responseEntity;
         }
-
+        JsonObject result = new JsonObject();
         User createdBy = userService.findUserById(auth.getPrincipal().toString());
         Activity newActivity = new Activity();
         // Init data;
         String organzationId = activityForm.getOrganizationId();
         Organization currentOrganization = organizationService.findOrgById(organzationId);
         if(currentOrganization==null){
-            JsonObject result = new JsonObject();
-            result.addProperty("code", ResultCode.ACTIVITY_NOT_FOUND.getCode());
-            result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
-            return new ResponseEntity<>(result.toString(), HttpStatus.NOT_FOUND);
+
+            result.addProperty("code", ResultCode.ORGANZITION_NOT_FOUND.getCode());
+            result.addProperty("message", ResultCode.ORGANZITION_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<>(result.toString(), HttpStatus.OK);
         }
+        newActivity.setName(activityForm.getName());
         newActivity.setOrganizationId(activityForm.getOrganizationId());
         newActivity.setDescription(activityForm.getDescription());
         newActivity.setStartDate(activityForm.getStartDate());
         newActivity.setEndDate(activityForm.getEndDate());
         newActivity.setActivityTypeId(activityForm.getActivityTypeId());
+        newActivity.setConfirmed(false);
         newActivity.setCreatedDate();
         newActivity.setLastUpdatedDate();
         newActivity.setCreatedBy(createdBy);
         newActivity.setLastUpdatedBy(createdBy);
         newActivity.setOrganization(currentOrganization);
-        Activity savedActivity = activityService.save(newActivity);
-        return new ResponseEntity<Activity>(newActivity, HttpStatus.CREATED);
+        try{
+            result.addProperty("code", ResultCode.SUCCESS.getCode());
+            result.addProperty("message", ResultCode.SUCCESS.getMessageVn());
+            activityService.save(newActivity);
+            return new ResponseEntity<>(activityForm, HttpStatus.CREATED);
+        }catch (Exception e){
+            result.addProperty("code", ResultCode.INTERNAL_SYSTEM_ERROR.getCode());
+            result.addProperty("message", e.getLocalizedMessage());
+            return new ResponseEntity<>(activityForm, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     @PutMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})

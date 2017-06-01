@@ -4,8 +4,14 @@ import com.coffeeinfinitive.dao.entity.Organization;
 import com.coffeeinfinitive.dao.entity.Role;
 import com.coffeeinfinitive.dao.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
@@ -13,14 +19,21 @@ import java.util.UUID;
 /**
  * Created by jinz on 4/15/17.
  */
-
+@JsonIgnoreProperties(value={ "organization" }, allowGetters=true)
 public class ActivityForm {
+
     private String id;
+
+    @NotBlank(message = "Tên hoạt động không được để trống")
     private String name;
+//    @NotBlank(message = "Nội dung không được để trống")
     private String description;
+    @NotBlank(message = "Hoạt động phải thuộc 1 tổ chức")
     private String organizationId;
     private Organization organization;
+    @NotNull(message = "Ngày diễn ra hoạt động không được để trống")
     private Date startDate;
+    @NotNull(message = "Ngày kết thúc hoạt động không được để trống")
     private Date endDate;
     private Date createdDate;
     private Date lastUpdatedDate;
@@ -57,31 +70,34 @@ public class ActivityForm {
     public void setDescription(String description) {
         this.description = description;
     }
-
-
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm",timezone = "Asia/Ho_Chi_Minh")
     public Date getStartDate() {
         return startDate;
     }
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm",timezone = "Asia/Ho_Chi_Minh")
+
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm",timezone = "Asia/Ho_Chi_Minh")
     public Date getEndDate() {
         return endDate;
     }
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm",timezone = "Asia/Ho_Chi_Minh")
+
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm",timezone = "Asia/Ho_Chi_Minh")
     public Date getCreatedDate() {
         return createdDate;
     }
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm",timezone = "Asia/Ho_Chi_Minh")
+
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
@@ -120,6 +136,7 @@ public class ActivityForm {
     }
 
 
+    @JsonIgnore
     public Organization getOrganization() {
         return organization;
     }
