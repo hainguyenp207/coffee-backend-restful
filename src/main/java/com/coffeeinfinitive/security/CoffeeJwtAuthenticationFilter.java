@@ -3,6 +3,7 @@ package com.coffeeinfinitive.security;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.coffeeinfinitive.exception.CoffeeAuthException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,11 +25,9 @@ import java.io.IOException;
  */
 public class CoffeeJwtAuthenticationFilter extends GenericFilterBean {
 
-    private final ObjectMapper mapper;
     private final TokenAuthenticationService tokenAuthenticationService;
 
-    public CoffeeJwtAuthenticationFilter(ObjectMapper mapper, TokenAuthenticationService tokenAuthenticationService) {
-        this.mapper = mapper;
+    public CoffeeJwtAuthenticationFilter(TokenAuthenticationService tokenAuthenticationService) {
         this.tokenAuthenticationService = tokenAuthenticationService;
     }
 
@@ -49,7 +48,7 @@ public class CoffeeJwtAuthenticationFilter extends GenericFilterBean {
                 result.addProperty("code",((CoffeeAuthException) e).getCode());
             }
             result.addProperty("message", e.getMessage());
-            mapper.writeValue(res.getWriter(), result.toString());
+            new Gson().toJson(result,res.getWriter());
         }
         catch (ServletException e){
             e.printStackTrace();

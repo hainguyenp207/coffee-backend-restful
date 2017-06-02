@@ -136,12 +136,24 @@ public class ActivityController {
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<Activity> getActivity(@PathVariable("id") String id) {
+    public ResponseEntity<?> getActivity(@PathVariable("id") String id) {
         Activity activity = activityService.findActivityById(id);
         if (activity == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(activity, HttpStatus.OK);
+
+        ActivityForm activityClient = new ActivityForm();
+        activityClient.setName(activity.getName());
+        activityClient.setDescription(activity.getDescription());
+        activityClient.setStartDate(activity.getStartDate());
+        activityClient.setEndDate(activity.getEndDate());
+        activityClient.setCreatedDate(activity.getCreatedDate());
+        activityClient.setId(activity.getId());
+        activityClient.setConfirmed(activity.isConfirmed());
+        activityClient.setPointSocial(activity.getPointSocial());
+        activityClient.setPointTranning(activity.getPointTranning());
+        activityClient.setOrganization(activity.getOrganization());
+        return new ResponseEntity<>(activityClient, HttpStatus.OK);
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -199,22 +211,39 @@ public class ActivityController {
     @PutMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> updateActivity(Authentication auth, @PathVariable("id") String id, @RequestBody ActivityForm activityForm) {
         Activity currentActivity = activityService.findActivityById(id);
+        JsonObject result = new JsonObject();
         if (currentActivity == null) {
-            JsonObject result = new JsonObject();
             result.addProperty("code", ResultCode.ACTIVITY_NOT_FOUND.getCode());
             result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
             return new ResponseEntity<>(result.toString(), HttpStatus.NOT_FOUND);
         }
-        Utils<ActivityForm, Activity> convert = new Utils<>(Activity.class);
+        Organization currentOrganization = organizationService.findOrgById(activityForm.getOrganizationId());
+        if(currentOrganization==null){
+
+            result.addProperty("code", ResultCode.ORGANZITION_NOT_FOUND.getCode());
+            result.addProperty("message", ResultCode.ORGANZITION_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<>(result.toString(), HttpStatus.OK);
+        }
+
         User updatedBy = userService.findUserById(auth.getPrincipal().toString());
-        Activity newActivity = convert.ConvertObject(activityForm);
+        Activity newActivity = new Activity();
+
+
         // Init data;
-        currentActivity = newActivity;
+        currentActivity.setName(activityForm.getName());
+        currentActivity.setOrganizationId(activityForm.getOrganizationId());
+        currentActivity.setDescription(activityForm.getDescription());
+        currentActivity.setStartDate(activityForm.getStartDate());
+        currentActivity.setEndDate(activityForm.getEndDate());
+        currentActivity.setActivityTypeId(activityForm.getActivityTypeId());
+        currentActivity.setConfirmed(activityForm.isConfirmed());
         currentActivity.setLastUpdatedDate();
         currentActivity.setLastUpdatedBy(updatedBy);
         try {
             Activity savedActivity = activityService.update(currentActivity);
-            return new ResponseEntity<Activity>(savedActivity, HttpStatus.OK);
+            result.addProperty("code",ResultCode.SUCCESS.getCode());
+            result.addProperty("message",ResultCode.SUCCESS.getMessageVn());
+            return new ResponseEntity<>(result.toString(), HttpStatus.OK);
         } catch (Exception e) {
             throw new CoffeeSystemErrorException("", e);
         }

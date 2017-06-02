@@ -4,6 +4,7 @@ import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.OrgUser;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.exception.CoffeeAuthException;
+import com.coffeeinfinitive.exception.CoffeeException;
 import com.coffeeinfinitive.model.OrganizationForm;
 import com.coffeeinfinitive.model.RoleForm;
 import com.coffeeinfinitive.model.UserForm;
@@ -31,7 +32,6 @@ public class TokenAuthenticationService {
     private static final String TOKEN_PREFIX = "X-Token";
     public static final String JWT_TOKEN_HEADER_PARAM = "X-Authorization";
     private final JwtTokenUtil jwtTokenUtil;
-    private ObjectMapper mapper = new ObjectMapper();
     @Autowired
     public TokenAuthenticationService(JwtTokenUtil jwtTokenUtil) {
         this.jwtTokenUtil = jwtTokenUtil;
@@ -71,10 +71,17 @@ public class TokenAuthenticationService {
         if (token == null || token.isEmpty())
             return null;
         token = token.replace(TOKEN_PREFIX+" ","");
-        User user = jwtTokenUtil
-                .getUserFromToken(token);
-
-        return new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword(),null);
+        try {
+            User user = jwtTokenUtil
+                    .getUserFromToken(token);
+            return new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword(),null);
+        }catch (CoffeeException e){
+            if(e.getMessage().contains("expired")){
+                throw new CoffeeAuthException(ResultCode.TOKEN_EXPIRED.getCode(),
+                        ResultCode.TOKEN_EXPIRED.getMessageVn());
+            }
+            throw new CoffeeAuthException(e.getCode(),e.getMessage());
+        }
     }
 
 }

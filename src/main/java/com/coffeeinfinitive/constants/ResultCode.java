@@ -4,7 +4,7 @@ package com.coffeeinfinitive.constants;
  * Created by jinz on 5/1/17.
  */
 public enum ResultCode {
-    SUCCESS(0,"Success"),
+    SUCCESS(0,"Success","Thành công"),
     UTF8_UNSUPPORT(1,"UTF8-Unsupport"),
     INVALID_SIGNATURE(2,"Invalid Signture configuration / Couldn't convert Claims."),
     INVALID_TOKEN(3,"Invalid token","Token không hợp lệ"),

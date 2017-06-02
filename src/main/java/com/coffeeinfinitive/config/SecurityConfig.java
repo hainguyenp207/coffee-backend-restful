@@ -80,10 +80,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 // We filter the api/login requests
                 .addFilterBefore(new CoffeeJwtLoginFilter(LOGIN_ENTRY_POINT,tokenAuthenticationService,
-                                userService, authenticationManager(), userOrgService, objectMapper),
+                                userService, authenticationManager(), userOrgService),
                         UsernamePasswordAuthenticationFilter.class)
                 // And filter other requests to check the presence of JWT in header
-                .addFilterBefore(new CoffeeJwtAuthenticationFilter(objectMapper, tokenAuthenticationService),
+                .addFilterBefore(new CoffeeJwtAuthenticationFilter(tokenAuthenticationService),
                         UsernamePasswordAuthenticationFilter.class);
     }
     @Bean

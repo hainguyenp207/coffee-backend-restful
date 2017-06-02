@@ -82,9 +82,9 @@ public class UserController {
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> addUser(@RequestBody UserForm userForm){
 
-        Utils<UserForm,User> convert = new Utils<UserForm,User>(User.class);
 
-        User newUser = convert.ConvertObject(userForm);
+
+        User newUser = new User();
         User userExist = userService.findUserById(userForm.getUsername());
 
         if(userExist!=null){
@@ -95,6 +95,11 @@ public class UserController {
         }
 
         Set<UserOrgForm> userOrgForms = userForm.getUserOrgForm();
+        newUser.setUsername(userForm.getUsername());
+        newUser.setEmail(userForm.getEmail());
+        newUser.setAddress(userForm.getAddress());
+        newUser.setOrganizationId(userForm.getOrganizationId());
+        newUser.setName(userForm.getName());
 
         if(userOrgForms !=null && !userOrgForms.isEmpty()){
             List<String> roleIds = new ArrayList<>();

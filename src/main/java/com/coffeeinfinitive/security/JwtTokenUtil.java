@@ -11,6 +11,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.exception.CoffeeAuthException;
+import com.coffeeinfinitive.exception.CoffeeException;
 import com.coffeeinfinitive.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,9 +50,6 @@ public final class JwtTokenUtil implements Serializable {
     @Autowired
     private UserService userService;
 
-    public String getUsernameFromToken(String token) {
-        return parseToken(token).getSubject();
-    }
 
     public Date getCreatedDateFromToken(JWT jwt) {
         return jwt.getIssuedAt();
@@ -82,7 +80,7 @@ public final class JwtTokenUtil implements Serializable {
 
 
     }
-    public User getUserFromToken(String token){
+    public User getUserFromToken(String token) throws CoffeeException {
         DecodedJWT jwt = parseToken(token);
         if(isTokenExpired(jwt)){
             throw new CoffeeAuthException(ResultCode.TOKEN_EXPIRED.getCode(), ResultCode.TOKEN_EXPIRED.getMessageVn());
@@ -94,7 +92,7 @@ public final class JwtTokenUtil implements Serializable {
         return user;
 
     }
-    private  DecodedJWT parseToken(String token){
+    private  DecodedJWT parseToken(String token) throws CoffeeException {
         try {
 
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -104,9 +102,10 @@ public final class JwtTokenUtil implements Serializable {
             return jwt;
         }catch (UnsupportedEncodingException ex){
             throw new CoffeeAuthException(ResultCode.UTF8_UNSUPPORT.getCode(),ex.getMessage());
-        }  catch (JWTVerificationException exception){
+        }
+        catch (JWTVerificationException exception){
             //Invalid signature/claims
-            throw new CoffeeAuthException(ResultCode.INVALID_TOKEN.getCode(), ResultCode.INVALID_TOKEN.getMessageVn());
+            throw new CoffeeException(ResultCode.INVALID_TOKEN.getCode(), exception.getLocalizedMessage());
         }
     }
 

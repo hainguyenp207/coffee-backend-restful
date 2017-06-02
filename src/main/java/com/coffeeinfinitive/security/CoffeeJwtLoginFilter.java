@@ -34,15 +34,13 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
     private final TokenAuthenticationService tokenAuthenticationService;
     private final UserService userService;
     private final UserOrgService userOrgService;
-    private final ObjectMapper mapper;
 
     public CoffeeJwtLoginFilter(String urlMapping, TokenAuthenticationService tokenAuthenticationService,
-                                UserService userService, AuthenticationManager authenticationManager, UserOrgService userOrgService, ObjectMapper mapper) {
+                                UserService userService, AuthenticationManager authenticationManager, UserOrgService userOrgService) {
         super(urlMapping);
         this.tokenAuthenticationService = tokenAuthenticationService;
         this.userService = userService;
         this.userOrgService = userOrgService;
-        this.mapper = mapper;
         setAuthenticationManager(authenticationManager);
     }
 
@@ -109,7 +107,7 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
         if(e.getMessage().equals("Bad credentials")){
             result.addProperty("message", ResultCode.BAD_CREDENTIAL.getMessageVn());
         }else
-        result.addProperty("message", e.getMessage());
+            result.addProperty("message", e.getMessage());
         new Gson().toJson(result,response.getWriter());
     }
 }
