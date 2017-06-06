@@ -66,6 +66,7 @@ public class Organization {
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "pk.organization")
+    @JsonBackReference
     public Set<OrgUser> getOrgUsers() {
         return orgUsers;
     }

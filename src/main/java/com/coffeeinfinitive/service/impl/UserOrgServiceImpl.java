@@ -24,4 +24,11 @@ public class UserOrgServiceImpl implements UserOrgService {
     public Set<OrgUser> getUserOrgByUsername(String id) {
         return userOrgRepository.findUserOrgByUsername(id);
     }
+
+    @Override
+    public void save(Set<OrgUser> orgUsers) {
+        for(OrgUser orgUser: orgUsers){
+            userOrgRepository.save(orgUser);
+        }
+    }
 }

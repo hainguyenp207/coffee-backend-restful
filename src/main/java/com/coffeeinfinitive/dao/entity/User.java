@@ -105,6 +105,7 @@ import java.util.*;
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "pk.user")
+    @JsonBackReference
     public Set<OrgUser> getOrgUsers() {
         return orgUsers;
     }
@@ -113,14 +114,14 @@ import java.util.*;
         this.orgUsers = orgUsers;
     }
 
-    @Column(name = "organization_id")
-    public String getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(String organizationId) {
-        this.organizationId = organizationId;
-    }
+//    @Column(name = "organization_id")
+//    public String getOrganizationId() {
+//        return organizationId;
+//    }
+//
+//    public void setOrganizationId(String organizationId) {
+//        this.organizationId = organizationId;
+//    }
 
     @JsonIgnore
     @Column(name = "last_password_reset_date")
@@ -167,6 +168,7 @@ import java.util.*;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "faculty_id",updatable = false,insertable = false)
+    @JsonIgnore
     public Faculty getFaculty() {
         return faculty;
     }

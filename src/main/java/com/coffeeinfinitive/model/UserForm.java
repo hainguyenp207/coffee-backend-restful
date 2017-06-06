@@ -28,7 +28,7 @@ public class UserForm {
 //    @JsonProperty("organization_id")
     private String organizationId;
     private String facultyId;
-    private Set<OrgUser> orgUsers;
+//    private Set<OrgUser> orgUsers;
     private Set<UserOrgForm> userOrgForm;
 
     @SerializedName("permissions")
@@ -111,13 +111,13 @@ public class UserForm {
     }
 
 
-    public Set<OrgUser> getOrgUsers() {
-        return orgUsers;
-    }
-
-    public void setOrgUsers(Set<OrgUser> orgUsers) {
-        this.orgUsers = orgUsers;
-    }
+//    public Set<OrgUser> getOrgUsers() {
+//        return orgUsers;
+//    }
+//
+//    public void setOrgUsers(Set<OrgUser> orgUsers) {
+//        this.orgUsers = orgUsers;
+//    }
 
     public String getFacultyId() {
         return facultyId;

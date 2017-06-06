@@ -2,16 +2,16 @@ package com.coffeeinfinitive.api;
 
 import com.coffeeinfinitive.Utils;
 import com.coffeeinfinitive.constants.ResultCode;
+import com.coffeeinfinitive.dao.entity.OrgUser;
+import com.coffeeinfinitive.dao.entity.Organization;
 import com.coffeeinfinitive.dao.entity.Role;
 import com.coffeeinfinitive.dao.entity.User;
-import com.coffeeinfinitive.model.UserForm;
-import com.coffeeinfinitive.model.UserOrgForm;
-import com.coffeeinfinitive.service.OrganizationService;
-import com.coffeeinfinitive.service.RoleService;
-import com.coffeeinfinitive.service.UserService;
-import com.coffeeinfinitive.service.ValidatorService;
+import com.coffeeinfinitive.model.*;
+import com.coffeeinfinitive.service.*;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.swing.text.html.parser.Entity;
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +42,8 @@ public class UserController {
     RoleService roleService;
     @Autowired
     OrganizationService orgService;
+    @Autowired
+    UserOrgService userOrgService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -67,23 +70,39 @@ public class UserController {
         return new ResponseEntity<List<?>>(usersModel, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/{id}")
+    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> getUser(@PathVariable("id") String id){
         User user = userService.findUserById(id);
         if(user==null){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            JsonObject res = new JsonObject();
+            res.addProperty("code", ResultCode.USER_NOT_FOUND.getCode());
+            res.addProperty("message", ResultCode.USER_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<>(res.toString(),HttpStatus.NOT_FOUND);
         }
         UserForm userClient = new UserForm();
-        userClient.setName(user.getName());
-        userClient.setAddress(user.getAddress());
-        userClient.setUsername(user.getUsername());
-        return new ResponseEntity<>(userClient, HttpStatus.OK);
+        UserForm userForm = new UserForm();
+        userForm.setName(user.getName());
+
+        Set<UserOrgDetailForm> userOrgDetailForms = new HashSet<>();
+        Set<OrgUser> orgUsers = userOrgService.getUserOrgByUsername(id);
+        orgUsers.forEach(orgUser -> {
+            OrganizationForm organizationForm = new OrganizationForm(false,orgUser.getOrganization().getId(), orgUser.getOrganization().getName());
+            RoleForm roleForm = new RoleForm(orgUser.getRole().getId(), orgUser.getRole().getName());
+            UserOrgDetailForm userOrgDetailForm = new UserOrgDetailForm(organizationForm,roleForm);
+            userOrgDetailForms.add(userOrgDetailForm);
+        });
+
+        userForm.setUserOrgDetailForms(userOrgDetailForms);
+        userForm.setEmail(user.getEmail());
+        userForm.setSex(user.isSex());
+        userForm.setUsername(user.getUsername());
+        userForm.setAddress(user.getAddress());
+        Gson gson = new Gson();
+        String body = gson.toJson(userForm,userForm.getClass());
+        return new ResponseEntity<>(body, HttpStatus.OK);
     }
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> addUser(@RequestBody UserForm userForm){
-
-
-
         User newUser = new User();
         User userExist = userService.findUserById(userForm.getUsername());
 
@@ -98,31 +117,23 @@ public class UserController {
         newUser.setUsername(userForm.getUsername());
         newUser.setEmail(userForm.getEmail());
         newUser.setAddress(userForm.getAddress());
-        newUser.setOrganizationId(userForm.getOrganizationId());
         newUser.setName(userForm.getName());
-
-        if(userOrgForms !=null && !userOrgForms.isEmpty()){
-            List<String> roleIds = new ArrayList<>();
-            userOrgForms.forEach(userOrgForm -> {
-                roleIds.add(userOrgForm.getRoleId());
-            });
-            JsonObject validateRole = validatorService.validatorRole(roleIds);
-            if(validateRole!=null){
-                return new ResponseEntity<Object>(validateRole.toString(), HttpStatus.BAD_REQUEST);
-            }
-        }
-        if(orgService.findOrgById(newUser.getOrganizationId())==null){
-            JsonObject result = new JsonObject();
-            result.addProperty("code", ResultCode.ORGANZITION_NOT_FOUND.getCode());
-            result.addProperty("message", ResultCode.ORGANZITION_NOT_FOUND.getMessageVn());
-            return new ResponseEntity<Object>(result.toString(),HttpStatus.BAD_REQUEST);
-        }
-
-
-        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        newUser.setPassword(passwordEncoder.encode(userForm.getPassword()));
+        Set<OrgUser> orgUsers = new HashSet<>();
+        User finalNewUser = newUser;
+        userForm.getUserOrgForm().forEach(userOrgForm -> {
+            Role role = roleService.findRoleById(userOrgForm.getRoleId());
+            Organization org = orgService.findOrgById(userOrgForm.getOrganizationId());
+            OrgUser orgUser = new OrgUser();
+            orgUser.setOrganization(org);
+            orgUser.setRole(role);
+            orgUser.setUser(finalNewUser);
+            orgUsers.add(orgUser);
+        });
 
         try{
-            newUser = userService.save(newUser);
+            newUser = userService.save(finalNewUser);
+            userOrgService.save(orgUsers);
         }catch (Exception e){
             e.printStackTrace();
             JsonObject result = new JsonObject();
@@ -134,30 +145,40 @@ public class UserController {
         return new ResponseEntity<Object>(newUser, HttpStatus.CREATED);
     }
     @PutMapping(path = "/{id}",produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> editUser(@PathVariable("id") String id, @RequestBody User user){
+    public ResponseEntity<?> editUser(@PathVariable("id") String id, @RequestBody UserForm userForm){
         User userExist = userService.findUserById(id);
-        user.setUsername(id);
+        userForm.setUsername(id);
         if(userExist==null){
             JsonObject result = new JsonObject();
             result.addProperty("code", ResultCode.USER_NOT_FOUND.getCode());
             result.addProperty("message", ResultCode.USER_NOT_FOUND.getMessageVn());
-            return new ResponseEntity<Object>(result.toString(),HttpStatus.CONFLICT);
+            return new ResponseEntity<Object>(result.toString(),HttpStatus.NOT_FOUND);
         }
-//        Set<Role> roles = user.getRoles();
-//        if(roles !=null && !roles.isEmpty()){
-//            List<Role> roleList =  new ArrayList<>();
-//            roleList.addAll(roles);
-//            JsonObject validateRole = validatorService.validatorRole(roleList);
-//            if(validateRole!=null){
-//                return new ResponseEntity<Object>(validateRole.toString(), HttpStatus.BAD_REQUEST);
-//            }
-//        }
 
-        if(user.getPassword()!=null || !user.getPassword().isEmpty())
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Set<UserOrgForm> userOrgForms = userForm.getUserOrgForm();
+        userExist.setEmail(userForm.getEmail());
+        userExist.setAddress(userForm.getAddress());
+        userExist.setName(userForm.getName());
+
+        if(userForm.getPassword()!=null)
+        userForm.setPassword(passwordEncoder.encode(userForm.getPassword()));
+
+        Set<OrgUser> orgUsers = new HashSet<>();
+
+        userForm.getUserOrgForm().forEach(userOrgForm -> {
+            Role role = roleService.findRoleById(userOrgForm.getRoleId());
+            Organization org = orgService.findOrgById(userOrgForm.getOrganizationId());
+            OrgUser orgUser = new OrgUser();
+            orgUser.setOrganization(org);
+            orgUser.setRole(role);
+            orgUser.setUser(userExist);
+            orgUsers.add(orgUser);
+
+        });
 
         try{
-            userService.updateUser(user);
+            userService.updateUser(userExist);
+            userOrgService.save(orgUsers);
         }catch (Exception e){
             JsonObject result = new JsonObject();
             result.addProperty("code", ResultCode.INTERNAL_SYSTEM_ERROR.getCode());
@@ -165,7 +186,7 @@ public class UserController {
             return new ResponseEntity<Object>(result.toString(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<Object>(user,HttpStatus.OK);
+        return new ResponseEntity<Object>(userForm,HttpStatus.OK);
     }
 
 }

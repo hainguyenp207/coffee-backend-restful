@@ -1,5 +1,6 @@
 package com.coffeeinfinitive.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
@@ -40,6 +41,7 @@ public class Faculty implements Serializable {
     }
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "faculty")
+    @JsonIgnore
     public Set<User> getUsers() {
         return users;
     }

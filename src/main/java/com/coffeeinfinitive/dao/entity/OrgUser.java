@@ -2,6 +2,7 @@ package com.coffeeinfinitive.dao.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,8 +45,11 @@ public class OrgUser implements Serializable {
     public void setPk(OrgUserId pk) {
         this.pk = pk;
     }
-
+    @Id
     @Transient
+    @MapsId("organization_id") //This is the name of attr in EmployerDeliveryAgentPK class
+    @JoinColumn(name = "organization_id")
+    @JsonManagedReference
     public Organization getOrganization() {
         return getPk().getOrganization();
     }
@@ -53,8 +57,11 @@ public class OrgUser implements Serializable {
     public void setOrganization(Organization organization) {
         getPk().setOrganization(organization);
     }
-
+    @Id
     @Transient
+    @MapsId("user_id") //This is the name of attr in EmployerDeliveryAgentPK class
+    @JoinColumn(name = "user_id")
+    @JsonManagedReference
     public User getUser() {
         return getPk().getUser();
     }
@@ -62,8 +69,11 @@ public class OrgUser implements Serializable {
     public void setUser(User user) {
        getPk().setUser(user);
     }
-
+    @Id
     @Transient
+    @MapsId("role_id") //This is the name of attr in EmployerDeliveryAgentPK class
+    @JoinColumn(name = "role_id")
+    @JsonManagedReference
     public Role getRole() {
         return getPk().getRole();
     }
