@@ -156,6 +156,29 @@ public class ActivityController {
         return new ResponseEntity<>(activityClient, HttpStatus.OK);
     }
 
+    // Lấy hoạt động theo user
+    @GetMapping(path = "/user/{userId}")
+    public ResponseEntity<?> getActivityByUser(@PathVariable("userId") String userId) {
+        Activity activity = activityService.findActivityByUser(userId);
+        if (activity == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        ActivityForm activityClient = new ActivityForm();
+        activityClient.setName(activity.getName());
+        activityClient.setDescription(activity.getDescription());
+        activityClient.setStartDate(activity.getStartDate());
+        activityClient.setEndDate(activity.getEndDate());
+        activityClient.setCreatedDate(activity.getCreatedDate());
+        activityClient.setId(activity.getId());
+        activityClient.setConfirmed(activity.isConfirmed());
+        activityClient.setPointSocial(activity.getPointSocial());
+        activityClient.setPointTranning(activity.getPointTranning());
+        activityClient.setOrganization(activity.getOrganization());
+        return new ResponseEntity<>(activityClient, HttpStatus.OK);
+    }
+
+
     @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> addActivity(Authentication auth,
                                          @Valid @RequestBody ActivityForm activityForm,

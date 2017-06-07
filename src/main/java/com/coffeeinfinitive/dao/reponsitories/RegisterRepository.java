@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Created by jinz on 4/16/17.
  */
@@ -14,4 +16,7 @@ import org.springframework.stereotype.Repository;
 public interface RegisterRepository extends JpaRepository<Register, String> {
     @Query("select count(r) from Register r where r.userId =:userId and r.activityId = :activityId")
     int checkUserRegisteredActivity(@Param("userId") String userId, @Param("activityId") String activityId);
+
+    @Query("select r from Register r where r.userId =:userId")
+    List<Register> getRegistersByUser(@Param("userId") String userId);
 }

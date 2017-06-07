@@ -79,7 +79,8 @@ public class Activity implements Serializable{
         this.description = description;
     }
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "activity")
-    @JsonManagedReference(value="register")
+
+    @JsonBackReference("register")
     public Set<Register> getRegisters() {
         return registers;
     }

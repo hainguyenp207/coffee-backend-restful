@@ -62,4 +62,9 @@ public class RegisterServiceImpl implements RegisterService{
     public boolean checkUserRegisterActivity(String userId, String activityId) {
         return registerRepository.checkUserRegisteredActivity(userId,activityId)>0? true:  false;
     }
+
+    @Override
+    public List<Register> getRegistersByUser(String userId) {
+        return registerRepository.getRegistersByUser(userId);
+    }
 }

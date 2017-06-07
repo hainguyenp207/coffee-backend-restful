@@ -64,7 +64,7 @@ public class Register {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "activity_id", nullable = false,updatable = false, insertable = false)
-    @JsonBackReference("register")
+    @JsonManagedReference(value="register")
     public Activity getActivity() {
         return activity;
     }
@@ -72,7 +72,8 @@ public class Register {
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
-@Column(name ="activity_id")
+
+    @Column(name ="activity_id")
     public String getActivityId() {
         return activityId;
     }

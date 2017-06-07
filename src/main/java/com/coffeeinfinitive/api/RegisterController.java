@@ -44,6 +44,14 @@ public class RegisterController {
 		  List<Register> registers = registerService.getRegisters();
 		  return new ResponseEntity<List<Register>>(registers, HttpStatus.OK);
     }
+
+    @GetMapping(path = "/user/{userId}")
+    public ResponseEntity<List<Register>> getRegisterByUser(@PathVariable("userId") String userId) {
+        List<Register> registers = registerService.getRegistersByUser(userId);
+        return new ResponseEntity<List<Register>>(registers, HttpStatus.OK);
+    }
+
+
     @GetMapping(path = "/{id}")
     public ResponseEntity<Register> getRegister(@PathVariable("id") String id) {
         Register register = registerService.findRegister(id);
@@ -100,12 +108,12 @@ public class RegisterController {
         if(responseEntity.getStatusCode().value()==404){
             return responseEntity;
         }
-        Utils<RegisterForm,Register> convert = new Utils<>(Register.class);
 
         User updatedBy = userService.findUserById(auth.getPrincipal().toString());
-        Register newRegister = convert.ConvertObject(registerForm);
         // Init data;
-        currentRegister = newRegister;
+        currentRegister.setJoined(registerForm.isJoined());
+        currentRegister.setPointSocial(registerForm.getPointSocial());
+        currentRegister.setPointTranning(registerForm.getPointTranning());
         currentRegister.setLastUpdatedDate();
         currentRegister.setLastUpdatedBy(updatedBy);
         try {
@@ -124,7 +132,6 @@ public class RegisterController {
             result.addProperty("message", ResultCode.REGISTER_NOT_FOUND.getMessageVn());
             return new ResponseEntity<>(result.toString(),HttpStatus.NOT_FOUND);
         }
-
         try{
             registerService.delete(id);
             return new ResponseEntity<Activity>(HttpStatus.NO_CONTENT);
