@@ -136,7 +136,7 @@ public class ActivityForm {
     }
 
 
-    @JsonIgnore
+
     public Organization getOrganization() {
         return organization;
     }

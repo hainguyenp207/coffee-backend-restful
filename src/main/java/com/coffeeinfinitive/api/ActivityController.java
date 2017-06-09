@@ -31,7 +31,7 @@ import java.util.Set;
  * Controller quản lý toàn bộ hoạt động
  */
 @RestController
-@RequestMapping(path = "/api/v1/activities")
+@RequestMapping(path = "/api/v1/activities",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class ActivityController {
 
     @Autowired
@@ -65,16 +65,18 @@ public class ActivityController {
 //
 //        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
 //    }
-    @GetMapping
-    public List<ActivityForm> getActivitiesByPage(Pageable pageable) {
-
-        Page<Activity> activities = activityService.getActivitiesByPage(pageable);
+    @GetMapping()
+    public List<ActivityForm> getActivitiesByPage(@RequestParam(value = "page",defaultValue = "0") int page,
+                                                  @RequestParam(value = "size", defaultValue = "50") int size) {
+        PageRequest pageRequest = new PageRequest(page,size);
+        Page<Activity> activities = activityService.getActivitiesByPage(pageRequest);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
             activityForm.setConfirmed(activity.isConfirmed());
             activityForm.setActivityTypeId(activity.getActivityTypeId());
             activityForm.setOrganization(activity.getOrganization());
+            activityForm.setOrganizationId(activity.getOrganizationId());
             activityForm.setStartDate(activity.getStartDate());
             activityForm.setEndDate(activity.getEndDate());
             activityForm.setCreatedDate(activity.getCreatedDate());
@@ -85,11 +87,17 @@ public class ActivityController {
 
         return activityForms;
     }
-    @GetMapping("/count")
+    @GetMapping(path="/count")
     public ResponseEntity<?> getTotalRow(){
         return new ResponseEntity<Object>(activityService.count(), HttpStatus.OK);
     }
 
+    // Đếm tổng số hoạt động chờ duyệt
+    @GetMapping(path = "/count/confirm")
+    public ResponseEntity<?> getTotalActivitiesConfirm(){
+        return new ResponseEntity<Object>(activityService.countActivitiesConfirm(),
+                HttpStatus.OK);
+    }
     /*
     Lay danh sach dang ky theo hoat dong
      */
@@ -158,24 +166,59 @@ public class ActivityController {
 
     // Lấy hoạt động theo user
     @GetMapping(path = "/user/{userId}")
-    public ResponseEntity<?> getActivityByUser(@PathVariable("userId") String userId) {
-        Activity activity = activityService.findActivityByUser(userId);
-        if (activity == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getActivityByUser(@PathVariable("userId") String userId, Pageable pageable) {
+        User user = userService.findUserById(userId);
+        if(user==null){
+            JsonObject result = new JsonObject();
+            result.addProperty("code", ResultCode.USER_NOT_FOUND.getCode());
+            result.addProperty("message", ResultCode.USER_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<Object>(result.toString(),HttpStatus.NOT_FOUND);
         }
 
-        ActivityForm activityClient = new ActivityForm();
-        activityClient.setName(activity.getName());
-        activityClient.setDescription(activity.getDescription());
-        activityClient.setStartDate(activity.getStartDate());
-        activityClient.setEndDate(activity.getEndDate());
-        activityClient.setCreatedDate(activity.getCreatedDate());
-        activityClient.setId(activity.getId());
-        activityClient.setConfirmed(activity.isConfirmed());
-        activityClient.setPointSocial(activity.getPointSocial());
-        activityClient.setPointTranning(activity.getPointTranning());
-        activityClient.setOrganization(activity.getOrganization());
-        return new ResponseEntity<>(activityClient, HttpStatus.OK);
+        List<Activity> activities = activityService.getActivityByUser(userId,pageable);
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setOrganization(activity.getOrganization());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setName(activity.getName());
+            activityForms.add(activityForm);
+        });
+        return new ResponseEntity<>(activityForms, HttpStatus.OK);
+    }
+
+// Lấy hoạt động theo to chuc
+    @GetMapping(path = "/org/{orgId}")
+    public ResponseEntity<?> getActivityByOrg(@PathVariable("orgId") String orgId, Pageable pageable) {
+        Organization organization = organizationService.findOrgById(orgId);
+        if(organization==null){
+            JsonObject result = new JsonObject();
+            result.addProperty("code", ResultCode.ORGANZITION_NOT_FOUND.getCode());
+            result.addProperty("message", ResultCode.ORGANZITION_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<Object>(result.toString(),HttpStatus.NOT_FOUND);
+        };
+        List<Activity> activities = activityService.getActivityByOrg(orgId,pageable);
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setName(activity.getName());
+            activityForm.setDescription(activity.getDescription());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setPointSocial(activity.getPointSocial());
+            activityForm.setPointTranning(activity.getPointTranning());
+            activityForm.setOrganization(activity.getOrganization());
+            activityForms.add(activityForm);
+        });
+        return new ResponseEntity<>(activityForms, HttpStatus.OK);
     }
 
 
@@ -284,7 +327,10 @@ public class ActivityController {
 
         try {
             activityService.delete(id);
-            return new ResponseEntity<Activity>(HttpStatus.NO_CONTENT);
+            JsonObject result = new JsonObject();
+            result.addProperty("code", ResultCode.SUCCESS.getCode());
+            result.addProperty("message", "Hoạt động đã được xóa");
+            return new ResponseEntity<>(result.toString(),HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             throw new CoffeeSystemErrorException("", e);
         }

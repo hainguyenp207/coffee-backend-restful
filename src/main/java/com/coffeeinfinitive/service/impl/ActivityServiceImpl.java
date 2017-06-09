@@ -57,4 +57,29 @@ public class ActivityServiceImpl implements ActivityService{
     public void delete(String id) {
         activityRepository.delete(id);
     }
+
+    @Override
+    public List<Activity> getActivityByUser(String userId) {
+        return null;
+    }
+
+    @Override
+    public List<Activity> getActivityByUser(String userId, Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public List<Activity> getActivityByOrg(String orgId) {
+        return activityRepository.getActivitiesByOrg(orgId);
+    }
+
+    @Override
+    public List<Activity> getActivityByOrg(String orgId, Pageable pageable) {
+        return activityRepository.getActivitiesByOrg(orgId,pageable);
+    }
+
+    @Override
+    public long countActivitiesConfirm() {
+        return activityRepository.countActivitiesConfirm();
+    }
 }

@@ -14,10 +14,13 @@ public interface ActivityService {
     List<Activity> getActivities() ;
     Page<Activity> getActivitiesByPage(Pageable pageable);
     Activity findActivityById(String id);
-    Activity findActivityByUser(String userId);
-    Activity findActivityByUser(String userId,Pageable pageable);
+    List<Activity> getActivityByUser(String userId);
+    List<Activity> getActivityByUser(String userId,Pageable pageable);
+    List<Activity> getActivityByOrg(String userId);
+    List<Activity> getActivityByOrg(String orgId,Pageable pageable);
     Activity save(Activity activity);
     Activity update(Activity activity);
     long count();
+    long countActivitiesConfirm();
     void delete(String id);
 }
