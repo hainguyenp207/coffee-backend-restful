@@ -27,4 +27,10 @@ public interface ActivityRepository extends JpaRepository<Activity, String> {
 
     @Query("select count(r) from Activity r where r.confirmed = false")
     long countActivitiesConfirm();
+
+    @Query("select count(r) from Activity r where r.organization.id=:orgId")
+    long countActivitiesByOrg(@Param("orgId") String orgId);
+
+    @Query("select count(r) from Activity r where r.confirmed = false and r.organization.id=:orgId")
+    long countActivitiesByOrgConfirm(@Param("orgId") String orgId);
 }

@@ -82,4 +82,14 @@ public class ActivityServiceImpl implements ActivityService{
     public long countActivitiesConfirm() {
         return activityRepository.countActivitiesConfirm();
     }
+
+    @Override
+    public long countActivitiesByOrg(String orgId) {
+        return activityRepository.countActivitiesByOrg(orgId);
+    }
+
+    @Override
+    public long countActivitiesByOrgConfirm(String orgId) {
+        return activityRepository.countActivitiesByOrgConfirm(orgId);
+    }
 }

@@ -19,4 +19,7 @@ public interface RegisterRepository extends JpaRepository<Register, String> {
 
     @Query("select r from Register r where r.userId =:userId")
     List<Register> getRegistersByUser(@Param("userId") String userId);
+    @Query("select count(r) from Register r where r.activityId =:activityId")
+    long getRegistersOfActivity(@Param("activityId") String activityId);
+
 }

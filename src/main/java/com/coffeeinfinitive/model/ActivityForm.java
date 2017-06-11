@@ -41,6 +41,7 @@ public class ActivityForm {
     private String activityTypeId;
     private int pointTranning;
     private int pointSocial;
+    private long countRegistered;
     private String status;
 
     public ActivityForm() {
@@ -173,5 +174,13 @@ public class ActivityForm {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public long getCountRegistered() {
+        return countRegistered;
+    }
+
+    public void setCountRegistered(long countRegistered) {
+        this.countRegistered = countRegistered;
     }
 }

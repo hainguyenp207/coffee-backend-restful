@@ -13,6 +13,7 @@ import java.util.List;
 public interface ActivityService {
     List<Activity> getActivities() ;
     Page<Activity> getActivitiesByPage(Pageable pageable);
+    //Page<Activity> getActivitiesByPage(Pageable pageable);
     Activity findActivityById(String id);
     List<Activity> getActivityByUser(String userId);
     List<Activity> getActivityByUser(String userId,Pageable pageable);
@@ -22,5 +23,7 @@ public interface ActivityService {
     Activity update(Activity activity);
     long count();
     long countActivitiesConfirm();
+    long countActivitiesByOrg(String orgId);
+    long countActivitiesByOrgConfirm(String orgId);
     void delete(String id);
 }

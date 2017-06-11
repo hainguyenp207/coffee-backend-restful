@@ -51,7 +51,6 @@ public class RegisterController {
         return new ResponseEntity<List<Register>>(registers, HttpStatus.OK);
     }
 
-
     @GetMapping(path = "/{id}")
     public ResponseEntity<Register> getRegister(@PathVariable("id") String id) {
         Register register = registerService.findRegister(id);
