@@ -19,6 +19,8 @@ public interface ActivityService {
     List<Activity> getActivityByUser(String userId,Pageable pageable);
     List<Activity> getActivityByOrg(String userId);
     List<Activity> getActivityByOrg(String orgId,Pageable pageable);
+    List<Activity> getActivitiesOrgPublic(String orgId,Pageable pageable);
+    Page<Activity> getActivityByPublic(Pageable pageable);
     Activity save(Activity activity);
     Activity update(Activity activity);
     long count();

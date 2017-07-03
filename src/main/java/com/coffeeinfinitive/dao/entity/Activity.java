@@ -37,9 +37,10 @@ public class Activity implements Serializable{
     private TypeActivity typeActivity;
     private Set<Register> registers;
     private Set<Comment> comments;
+    private String img;
 
     public Activity(){
-        this.id = UUID.randomUUID().toString();
+        this.id = String.valueOf(System.currentTimeMillis());
     }
 
     public Activity(String name, String description, Organization organization, Date startDate, Date endDate, User createdBy, User lastUpdatedBy, int pointTranning, int pointSocial, TypeActivity typeActivity) {
@@ -250,5 +251,14 @@ public class Activity implements Serializable{
 
     public void setComments(Set<Comment> comments) {
         this.comments = comments;
+    }
+
+    @Column(name = "img")
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
     }
 }

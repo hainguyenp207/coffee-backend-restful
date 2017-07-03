@@ -1,10 +1,9 @@
 package com.coffeeinfinitive.api;
 
-import com.coffeeinfinitive.Utils;
+import com.coffeeinfinitive.Utils.Handler;
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.Activity;
 import com.coffeeinfinitive.dao.entity.Comment;
-import com.coffeeinfinitive.dao.entity.Register;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.exception.CoffeeSystemErrorException;
 import com.coffeeinfinitive.model.CommentForm;
@@ -18,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by jinz on 4/15/17.
@@ -93,7 +91,7 @@ public class CommentController {
             result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
             return new ResponseEntity<>(result.toString(),HttpStatus.NOT_FOUND);
         }
-        Utils<CommentForm,Comment> convert = new Utils<>(Comment.class);
+        Handler<CommentForm,Comment> convert = new Handler<>(Comment.class);
 
         User createdBy = userService.findUserById(auth.getPrincipal().toString());
         System.out.println("Create by: "+ createdBy.getUsername());
@@ -117,7 +115,7 @@ public class CommentController {
             result.addProperty("message", ResultCode.COMMENT_NOT_FOUND.getMessageVn());
             return new ResponseEntity<>(result.toString(),HttpStatus.NOT_FOUND);
         }
-        Utils<CommentForm,Comment> convert = new Utils<>(Comment.class);
+        Handler<CommentForm,Comment> convert = new Handler<>(Comment.class);
         User updatedBy = userService.findUserById(auth.getPrincipal().toString());
         Comment newComment = convert.ConvertObject(commentForm);
         // Init data;

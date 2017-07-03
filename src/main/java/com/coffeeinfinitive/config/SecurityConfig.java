@@ -5,6 +5,7 @@ import com.coffeeinfinitive.service.UserOrgService;
 import com.coffeeinfinitive.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,7 +19,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
+import javax.servlet.MultipartConfigElement;
 import java.util.Arrays;
 
 
@@ -76,6 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/password").permitAll()
                 .antMatchers("/").permitAll()
                 .antMatchers(HttpMethod.POST, LOGIN_ENTRY_POINT).permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/activities/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/organizations/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 // We filter the api/login requests
@@ -98,9 +104,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","OPTIONS","DELETE"));
-        configuration.setAllowedHeaders(Arrays.asList("X-Authorization","Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("X-Authorization","Content-Type", "enctype"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+    @Bean
+    public MultipartConfigElement multipartConfigElement () {
+        MultipartConfigFactory factory = new MultipartConfigFactory ();
+        factory.setMaxFileSize ( "50MB");
+        factory.setMaxRequestSize ( "50MB");
+        return factory.createMultipartConfig ();
+    }
+    @Bean
+    public MultipartResolver multipartResolver() {
+        CommonsMultipartResolver resolver = new CommonsMultipartResolver();
+        resolver.setMaxUploadSize(1000000);
+        return resolver;
     }
 }

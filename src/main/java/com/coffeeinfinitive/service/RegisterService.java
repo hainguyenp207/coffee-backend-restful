@@ -20,6 +20,7 @@ public interface RegisterService {
     Register update(Register register);
     void delete(String id);
     boolean checkUserRegisterActivity(String userId, String activityId);
+    Register getRegisterOfUser(String userId, String activityId);
     List<Register> getRegistersByUser(String userId);
     long getRegisteredOfActivity(String activityId);
 }

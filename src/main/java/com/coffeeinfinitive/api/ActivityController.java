@@ -1,14 +1,15 @@
 package com.coffeeinfinitive.api;
 
-import com.coffeeinfinitive.Utils;
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.*;
 import com.coffeeinfinitive.exception.CoffeeSystemErrorException;
 import com.coffeeinfinitive.model.ActivityForm;
-import com.coffeeinfinitive.model.UserForm;
 import com.coffeeinfinitive.service.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,11 +19,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.naming.Binding;
+import javax.servlet.ServletContext;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +36,7 @@ import java.util.Set;
  * Controller quản lý toàn bộ hoạt động
  */
 @RestController
+@CrossOrigin(origins = "**")
 @RequestMapping(path = "/api/v1/activities",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class ActivityController {
 
@@ -46,8 +52,18 @@ public class ActivityController {
     OrganizationService organizationService;
     @Autowired
     CommentService commentService;
+    private Gson gson;
 
-//    @GetMapping
+
+    @Value("#{servletContext.contextPath}")
+    private static String UPLOADED_FOLDER;
+
+    public ActivityController() {
+        this.UPLOADED_FOLDER += "/upload/";
+        gson = new GsonBuilder().setDateFormat("dd-MM-yyyy HH:mm").create();
+    }
+
+    //    @GetMapping
 //    public ResponseEntity<List<?>> getActivities() {
 //        List<Activity> activities = activityService.getActivities();
 //        List<ActivityForm> activityForms = new ArrayList<>();
@@ -70,6 +86,29 @@ public class ActivityController {
                                                   @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
         Page<Activity> activities = activityService.getActivitiesByPage(pageRequest);
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setDescription(activity.getDescription());
+            activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setOrganization(activity.getOrganization());
+            activityForm.setOrganizationId(activity.getOrganizationId());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setName(activity.getName());
+            activityForms.add(activityForm);
+        });
+        return activityForms;
+    }
+
+    @GetMapping(path = "/public")
+    public List<ActivityForm> getActivitiesPublicByPage(@RequestParam(value = "page",defaultValue = "0") int page,
+                                                  @RequestParam(value = "size", defaultValue = "50") int size) {
+        PageRequest pageRequest = new PageRequest(page,size);
+        Page<Activity> activities = activityService.getActivityByPublic(pageRequest);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -284,15 +323,16 @@ public class ActivityController {
     }
 
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = {"multipart/form-data"})
     public ResponseEntity<?> addActivity(Authentication auth,
-                                         @Valid @RequestBody ActivityForm activityForm,
-                                         BindingResult bindingResult) {
+                                         @RequestPart("file") MultipartFile file,
+                                         @RequestPart("properties") String jsonObject                                         ) {
 
-        ResponseEntity response = validatorService.validateForm(bindingResult);
-        if(response!=null){
-            return response;
-        }
+    ActivityForm activityForm = gson.fromJson(jsonObject, ActivityForm.class);
+//        ResponseEntity response = validatorService.validateForm(bindingResult);
+//        if(response!=null){
+//            return response;
+//        }
 
         Activity currentActivity = activityService.findActivityById(activityForm.getId());
         ResponseEntity responseEntity = validatorService.checkExistActivity(currentActivity);
@@ -323,6 +363,18 @@ public class ActivityController {
         newActivity.setCreatedBy(createdBy);
         newActivity.setLastUpdatedBy(createdBy);
         newActivity.setOrganization(currentOrganization);
+//        if(activityForm.getAvatar()==null){
+//            newActivity.setImg(UPLOADED_FOLDER+"/hcmute.png");
+//        }else{
+//            try {
+//                saveUploadedFiles(activityForm.getAvatar());
+//                newActivity.setImg(UPLOADED_FOLDER+activityForm.getAvatar().getOriginalFilename());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
+
         try{
             result.addProperty("code", ResultCode.SUCCESS.getCode());
             result.addProperty("message", ResultCode.SUCCESS.getMessageVn());
@@ -396,6 +448,12 @@ public class ActivityController {
         } catch (Exception e) {
             throw new CoffeeSystemErrorException("", e);
         }
+    }
+    private void saveUploadedFiles(MultipartFile file) throws IOException {
+            byte[] bytes = file.getBytes();
+            Path path = Paths.get(UPLOADED_FOLDER + file.getOriginalFilename());
+            Files.write(path, bytes);
+
     }
 
 }

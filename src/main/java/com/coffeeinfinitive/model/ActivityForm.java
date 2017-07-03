@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -42,7 +43,11 @@ public class ActivityForm {
     private int pointTranning;
     private int pointSocial;
     private long countRegistered;
+    private MultipartFile avatar;
+    private String desc;
+    private String imgUrl;
     private String status;
+    private boolean canRegister;
 
     public ActivityForm() {
         this.id = UUID.randomUUID().toString();
@@ -182,5 +187,23 @@ public class ActivityForm {
 
     public void setCountRegistered(long countRegistered) {
         this.countRegistered = countRegistered;
+    }
+
+    public String getDesc() {
+        if(this.description == null)
+            return "";
+        if(this.description.length()>50)
+            return this.description.substring(0, 50) +" ...";
+        return this.description;
+    }
+
+    public boolean isCanRegister() {
+        Date now = new Date();
+       return now.before(endDate);
+
+    }
+
+    public void setCanRegister(boolean canRegister) {
+        this.canRegister = canRegister;
     }
 }

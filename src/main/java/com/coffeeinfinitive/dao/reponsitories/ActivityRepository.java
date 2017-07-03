@@ -2,6 +2,7 @@ package com.coffeeinfinitive.dao.reponsitories;
 
 import com.coffeeinfinitive.dao.entity.Activity;
 import com.coffeeinfinitive.dao.entity.Role;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +22,12 @@ public interface ActivityRepository extends JpaRepository<Activity, String> {
 
     @Query("select ac from Activity ac where ac.organization.id=:orgId")
     List<Activity> getActivitiesByOrg(@Param("orgId") String orgId,Pageable pageable);
+
+    @Query("select ac from Activity ac where ac.confirmed = true")
+    Page<Activity> getActivitiesPublic(Pageable pageable);
+
+    @Query("select ac from Activity ac where ac.organization.id=:orgId and ac.confirmed = true")
+    List<Activity> getActivitiesPublic(@Param("orgId") String orgId,Pageable pageable);
 
     @Query("select ac from Activity ac where ac.organization.id=:orgId")
     List<Activity> getActivitiesByOrg(@Param("orgId") String orgId);

@@ -92,4 +92,14 @@ public class ActivityServiceImpl implements ActivityService{
     public long countActivitiesByOrgConfirm(String orgId) {
         return activityRepository.countActivitiesByOrgConfirm(orgId);
     }
+
+    @Override
+    public List<Activity> getActivitiesOrgPublic(String orgId, Pageable pageable) {
+        return activityRepository.getActivitiesPublic(orgId, pageable);
+    }
+
+    @Override
+    public Page<Activity> getActivityByPublic(Pageable pageable) {
+        return activityRepository.getActivitiesPublic(pageable);
+    }
 }

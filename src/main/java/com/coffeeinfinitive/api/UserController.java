@@ -1,6 +1,5 @@
 package com.coffeeinfinitive.api;
 
-import com.coffeeinfinitive.Utils;
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.OrgUser;
 import com.coffeeinfinitive.dao.entity.Organization;
@@ -9,9 +8,7 @@ import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.model.*;
 import com.coffeeinfinitive.service.*;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,8 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.parser.Entity;
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

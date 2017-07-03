@@ -1,4 +1,4 @@
-package com.coffeeinfinitive;
+package com.coffeeinfinitive.Utils;
 
 import com.coffeeinfinitive.dao.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,11 +9,11 @@ import java.io.IOException;
 /**
  * Created by jinz on 5/4/17.
  */
-public class Utils<F,T> {
+public class Handler<F,T> {
     public ObjectMapper mapper = new ObjectMapper();
     private final Class<T> type;
 
-    public Utils(Class<T> type) {
+    public Handler(Class<T> type) {
         this.type = type;
     }
 

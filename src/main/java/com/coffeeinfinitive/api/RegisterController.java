@@ -1,12 +1,11 @@
 package com.coffeeinfinitive.api;
 
-import com.coffeeinfinitive.Utils;
+import com.coffeeinfinitive.Utils.Handler;
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.Activity;
 import com.coffeeinfinitive.dao.entity.Register;
 import com.coffeeinfinitive.dao.entity.User;
 import com.coffeeinfinitive.exception.CoffeeSystemErrorException;
-import com.coffeeinfinitive.model.ActivityForm;
 import com.coffeeinfinitive.model.RegisterForm;
 import com.coffeeinfinitive.service.ActivityService;
 import com.coffeeinfinitive.service.RegisterService;
@@ -50,6 +49,26 @@ public class RegisterController {
         List<Register> registers = registerService.getRegistersByUser(userId);
         return new ResponseEntity<List<Register>>(registers, HttpStatus.OK);
     }
+    @GetMapping(path = "/user/{userId}/activities/{activityId}")
+    public boolean checkRegisteredActivity(@PathVariable("userId") String userId,
+                                           @PathVariable("activityId") String activityId                         ) {
+        return registerService.checkUserRegisterActivity(userId, activityId);
+    }
+
+    @GetMapping(path = "/users/{userId}/activities/{activityId}")
+    public ResponseEntity<?> getRegisteredUser(@PathVariable("userId") String userId,
+                                           @PathVariable("activityId") String activityId                         ) {
+        Register register = registerService.getRegisterOfUser(userId, activityId);
+        if(register == null){
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("code", ResultCode.REGISTER_NOT_FOUND.getCode());
+                jsonObject.addProperty("message", ResultCode.REGISTER_NOT_FOUND.getMessageVn());
+                return new ResponseEntity<Object>(jsonObject.toString(), HttpStatus.NOT_FOUND);
+        }
+        
+        return new ResponseEntity<Register>(register, HttpStatus.OK);
+
+    }
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<Register> getRegister(@PathVariable("id") String id) {
@@ -67,7 +86,7 @@ public class RegisterController {
         if(responseEntity.getStatusCode().value()==409){
             return responseEntity;
         }
-        Utils<RegisterForm,Register> convert = new Utils<>(Register.class);
+        Handler<RegisterForm,Register> convert = new Handler<>(Register.class);
 
         Activity currentActivity = activityService.findActivityById(registerForm.getActivityId());
          responseEntity = validatorService.checkExistActivity(currentActivity);
@@ -89,8 +108,11 @@ public class RegisterController {
         }
         // Init data;
         User createdBy = userService.findUserById(auth.getPrincipal().toString());
-        Register newRegister = convert.ConvertObject(registerForm);
-
+        Register newRegister = new Register();
+        newRegister.setPointTranning(registerForm.getPointTranning());
+        newRegister.setPointSocial(registerForm.getPointSocial());
+        newRegister.setActivityId(registerForm.getActivityId());
+        newRegister.setUserId(registerForm.getUserId());
         newRegister.setCreatedDate();
         newRegister.setLastUpdatedDate();
         newRegister.setCreatedBy(createdBy);

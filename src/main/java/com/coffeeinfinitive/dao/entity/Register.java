@@ -29,11 +29,11 @@ public class Register {
     private User lastUpdatedBy;
 
     public Register(String name){
-        this.id = UUID.randomUUID().toString();
+        this.id = String.valueOf(System.currentTimeMillis());
         this.createdDate = this.lastUpdatedDate = new Date();
     }
     public Register(){
-        this.id = UUID.randomUUID().toString();
+        this.id = String.valueOf(System.currentTimeMillis());
     }
 
     @Id

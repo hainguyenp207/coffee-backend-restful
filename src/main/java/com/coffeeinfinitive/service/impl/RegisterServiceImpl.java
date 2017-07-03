@@ -72,4 +72,9 @@ public class RegisterServiceImpl implements RegisterService{
     public long getRegisteredOfActivity(String activityId) {
         return registerRepository.getRegistersOfActivity(activityId);
     }
+
+    @Override
+    public Register getRegisterOfUser(String userId, String activityId) {
+        return registerRepository.getRegisteredOfUser(userId,activityId);
+    }
 }
