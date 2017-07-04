@@ -20,11 +20,15 @@ public interface ActivityService {
     List<Activity> getActivityByOrg(String userId);
     List<Activity> getActivityByOrg(String orgId,Pageable pageable);
     List<Activity> getActivitiesOrgPublic(String orgId,Pageable pageable);
-    Page<Activity> getActivityByPublic(Pageable pageable);
+    List<Activity> search(String keyword, Pageable pageable);
+    List<Activity> searchOrg(String keyword, String orgId, Pageable pageable);
+    List<Activity> getActivityByPublic(Pageable pageable);
     Activity save(Activity activity);
     Activity update(Activity activity);
     long count();
     long countActivitiesConfirm();
+    long countActivitiesPubic();
+    long countActivitiesOrgPublic(String orgId);
     long countActivitiesByOrg(String orgId);
     long countActivitiesByOrgConfirm(String orgId);
     void delete(String id);

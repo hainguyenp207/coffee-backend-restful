@@ -5,6 +5,7 @@ import com.coffeeinfinitive.dao.entity.*;
 import com.coffeeinfinitive.exception.CoffeeSystemErrorException;
 import com.coffeeinfinitive.model.ActivityForm;
 import com.coffeeinfinitive.service.*;
+import com.coffeeinfinitive.storage.StorageService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -17,12 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.ServletContext;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,11 +53,14 @@ public class ActivityController {
     private Gson gson;
 
 
-    @Value("#{servletContext.contextPath}")
+    @Value("${server.context-path}")
     private static String UPLOADED_FOLDER;
+    private final StorageService storageService;
 
-    public ActivityController() {
-        this.UPLOADED_FOLDER += "/upload/";
+    @Autowired
+    public ActivityController(StorageService storageService) {
+        this.storageService = storageService;
+        this.UPLOADED_FOLDER = "";
         gson = new GsonBuilder().setDateFormat("dd-MM-yyyy HH:mm").create();
     }
 
@@ -99,6 +100,7 @@ public class ActivityController {
             activityForm.setCreatedDate(activity.getCreatedDate());
             activityForm.setId(activity.getId());
             activityForm.setName(activity.getName());
+            activityForm.setImgUrl(activity.getImg());
             activityForms.add(activityForm);
         });
         return activityForms;
@@ -108,7 +110,70 @@ public class ActivityController {
     public List<ActivityForm> getActivitiesPublicByPage(@RequestParam(value = "page",defaultValue = "0") int page,
                                                   @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
-        Page<Activity> activities = activityService.getActivityByPublic(pageRequest);
+        List<Activity> activities = activityService.getActivityByPublic(pageRequest);
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setImgUrl(activity.getImg());
+            activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setOrganization(activity.getOrganization());
+            activityForm.setOrganizationId(activity.getOrganizationId());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setName(activity.getName());
+            activityForms.add(activityForm);
+        });
+        return activityForms;
+    }
+
+    @GetMapping(path = "/public/search")
+    public List<ActivityForm> getActivitiesPublicByPage(
+            @RequestParam(value = "q") String keyword,
+            @RequestParam(value = "organization_id", required = false) String organizationId, @RequestParam(value = "page",defaultValue = "0") int page,
+                                                        @RequestParam(value = "size", defaultValue = "50") int size) {
+        PageRequest pageRequest = new PageRequest(page,size);
+        List<Activity> activities;
+        if(organizationId==null){
+            if(keyword.isEmpty())
+                activities = activityService.getActivityByPublic(pageRequest);
+            else
+                activities = activityService.search(keyword,pageRequest);
+        }
+        else{
+            if(keyword.isEmpty())
+                activities = activityService.getActivitiesOrgPublic(organizationId,pageRequest);
+            else
+            activities = activityService.searchOrg(keyword, organizationId, pageRequest);
+        }
+
+
+        List<ActivityForm> activityForms = new ArrayList<>();
+        activities.forEach(activity -> {
+            ActivityForm activityForm = new ActivityForm();
+            activityForm.setImgUrl(activity.getImg());
+            activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setActivityTypeId(activity.getActivityTypeId());
+            activityForm.setOrganization(activity.getOrganization());
+            activityForm.setOrganizationId(activity.getOrganizationId());
+            activityForm.setStartDate(activity.getStartDate());
+            activityForm.setEndDate(activity.getEndDate());
+            activityForm.setCreatedDate(activity.getCreatedDate());
+            activityForm.setId(activity.getId());
+            activityForm.setName(activity.getName());
+
+            activityForms.add(activityForm);
+        });
+        return activityForms;
+    }
+
+    @GetMapping(path = "/organizations/{orgId}/public")
+    public List<ActivityForm> getActivitiesPublicOrgByPage(@PathVariable("orgId") String orgId, @RequestParam(value = "page",defaultValue = "0") int page,
+                                                  @RequestParam(value = "size", defaultValue = "50") int size) {
+        PageRequest pageRequest = new PageRequest(page,size);
+        List<Activity> activities = activityService.getActivitiesOrgPublic(orgId,pageRequest);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -117,6 +182,8 @@ public class ActivityController {
             activityForm.setOrganization(activity.getOrganization());
             activityForm.setOrganizationId(activity.getOrganizationId());
             activityForm.setStartDate(activity.getStartDate());
+            activityForm.setImgUrl(activity.getImg());
+
             activityForm.setEndDate(activity.getEndDate());
             activityForm.setCreatedDate(activity.getCreatedDate());
             activityForm.setId(activity.getId());
@@ -142,6 +209,7 @@ public class ActivityController {
             activityForm.setEndDate(activity.getEndDate());
             activityForm.setCreatedDate(activity.getCreatedDate());
             activityForm.setId(activity.getId());
+            activityForm.setImgUrl(activity.getImg());
             activityForm.setName(activity.getName());
             activityForm.setCountRegistered(registerService.getRegisteredOfActivity(activity.getId()));
             activityForms.add(activityForm);
@@ -150,13 +218,23 @@ public class ActivityController {
         return activityForms;
     }
 
-
-
     @GetMapping(path="/count")
     public ResponseEntity<?> getTotalRow(@RequestParam(value = "org", required = false) String org){
         if(org == null)
-        return new ResponseEntity<Object>(activityService.count(), HttpStatus.OK);
+            return new ResponseEntity<Object>(activityService.count(), HttpStatus.OK);
         return new ResponseEntity<Object>(activityService.countActivitiesByOrg(org),HttpStatus.OK);
+    }
+
+    /**
+     * Paging public
+     * @param org
+     * @return
+     */
+    @GetMapping(path="/count/public")
+    public ResponseEntity<?> getRowPublic(@RequestParam(value = "org", required = false) String org){
+        if(org == null)
+        return new ResponseEntity<Object>(activityService.countActivitiesPubic(), HttpStatus.OK);
+        return new ResponseEntity<Object>(activityService.countActivitiesOrgPublic(org),HttpStatus.OK);
     }
 
     // Đếm tổng số hoạt động chờ duyệt
@@ -228,6 +306,7 @@ public class ActivityController {
         activityClient.setEndDate(activity.getEndDate());
         activityClient.setCreatedDate(activity.getCreatedDate());
         activityClient.setId(activity.getId());
+        activityClient.setImgUrl(activity.getImg());
         activityClient.setConfirmed(activity.isConfirmed());
         activityClient.setPointSocial(activity.getPointSocial());
         activityClient.setPointTranning(activity.getPointTranning());
@@ -251,10 +330,12 @@ public class ActivityController {
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
             activityForm.setConfirmed(activity.isConfirmed());
+            activityForm.setImgUrl(activity.getImg());
             activityForm.setActivityTypeId(activity.getActivityTypeId());
             activityForm.setOrganization(activity.getOrganization());
             activityForm.setStartDate(activity.getStartDate());
             activityForm.setEndDate(activity.getEndDate());
+            activityForm.setImgUrl(activity.getImg());
             activityForm.setCreatedDate(activity.getCreatedDate());
             activityForm.setId(activity.getId());
             activityForm.setName(activity.getName());
@@ -287,6 +368,7 @@ public class ActivityController {
             activityForm.setPointSocial(activity.getPointSocial());
             activityForm.setPointTranning(activity.getPointTranning());
             activityForm.setOrganization(activity.getOrganization());
+            activityForm.setImgUrl(activity.getImg());
             activityForms.add(activityForm);
         });
         return new ResponseEntity<>(activityForms, HttpStatus.OK);
@@ -307,6 +389,7 @@ public class ActivityController {
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
             activityForm.setName(activity.getName());
+            activityForm.setImgUrl(activity.getImg());
             activityForm.setDescription(activity.getDescription());
             activityForm.setStartDate(activity.getStartDate());
             activityForm.setEndDate(activity.getEndDate());
@@ -323,12 +406,12 @@ public class ActivityController {
     }
 
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = {"multipart/form-data"})
+    @PostMapping
     public ResponseEntity<?> addActivity(Authentication auth,
-                                         @RequestPart("file") MultipartFile file,
-                                         @RequestPart("properties") String jsonObject                                         ) {
+                                         @RequestPart String data,
+                                         @RequestPart(required = false) MultipartFile file                                     ) {
 
-    ActivityForm activityForm = gson.fromJson(jsonObject, ActivityForm.class);
+        ActivityForm activityForm   = gson.fromJson(data,ActivityForm.class);
 //        ResponseEntity response = validatorService.validateForm(bindingResult);
 //        if(response!=null){
 //            return response;
@@ -363,17 +446,14 @@ public class ActivityController {
         newActivity.setCreatedBy(createdBy);
         newActivity.setLastUpdatedBy(createdBy);
         newActivity.setOrganization(currentOrganization);
-//        if(activityForm.getAvatar()==null){
-//            newActivity.setImg(UPLOADED_FOLDER+"/hcmute.png");
-//        }else{
-//            try {
-//                saveUploadedFiles(activityForm.getAvatar());
-//                newActivity.setImg(UPLOADED_FOLDER+activityForm.getAvatar().getOriginalFilename());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
+        newActivity.setPointTranning(activityForm.getPointTranning());
+        newActivity.setPointSocial(activityForm.getPointSocial());
+        if(file == null){
+            newActivity.setImg("hcmute.png");
+        }else{
+            storageService.store(file);
+            newActivity.setImg(file.getOriginalFilename());
+        }
 
         try{
             result.addProperty("code", ResultCode.SUCCESS.getCode());
@@ -385,11 +465,14 @@ public class ActivityController {
             result.addProperty("message", e.getLocalizedMessage());
             return new ResponseEntity<>(activityForm, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 
     @PutMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> updateActivity(Authentication auth, @PathVariable("id") String id, @RequestBody ActivityForm activityForm) {
+    public ResponseEntity<?> updateActivity(Authentication auth, @PathVariable("id") String id,
+                                            @RequestPart String data,
+                                            @RequestPart(required = false) MultipartFile file
+                                           ) {
+        ActivityForm activityForm   = gson.fromJson(data,ActivityForm.class);
         Activity currentActivity = activityService.findActivityById(id);
         JsonObject result = new JsonObject();
         if (currentActivity == null) {
@@ -407,8 +490,6 @@ public class ActivityController {
 
         User updatedBy = userService.findUserById(auth.getPrincipal().toString());
         Activity newActivity = new Activity();
-
-
         // Init data;
         currentActivity.setName(activityForm.getName());
         currentActivity.setOrganizationId(activityForm.getOrganizationId());
@@ -419,6 +500,16 @@ public class ActivityController {
         currentActivity.setConfirmed(activityForm.isConfirmed());
         currentActivity.setLastUpdatedDate();
         currentActivity.setLastUpdatedBy(updatedBy);
+        currentActivity.setPointSocial(activityForm.getPointSocial());
+        currentActivity.setPointTranning(activityForm.getPointTranning());
+        if(file == null){
+            newActivity.setImg("hcmute.png");
+        }else{
+            if(!file.getOriginalFilename().equalsIgnoreCase(currentActivity.getImg())){
+                storageService.store(file);
+                currentActivity.setImg(file.getOriginalFilename());
+            }
+        }
         try {
             Activity savedActivity = activityService.update(currentActivity);
             result.addProperty("code",ResultCode.SUCCESS.getCode());

@@ -82,6 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, LOGIN_ENTRY_POINT).permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/activities/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/organizations/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/files/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 // We filter the api/login requests
@@ -108,18 +109,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-    @Bean
-    public MultipartConfigElement multipartConfigElement () {
-        MultipartConfigFactory factory = new MultipartConfigFactory ();
-        factory.setMaxFileSize ( "50MB");
-        factory.setMaxRequestSize ( "50MB");
-        return factory.createMultipartConfig ();
-    }
-    @Bean
-    public MultipartResolver multipartResolver() {
-        CommonsMultipartResolver resolver = new CommonsMultipartResolver();
-        resolver.setMaxUploadSize(1000000);
-        return resolver;
     }
 }

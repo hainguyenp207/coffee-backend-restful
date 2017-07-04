@@ -6,6 +6,7 @@ import com.coffeeinfinitive.dao.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.gson.annotations.SerializedName;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,7 +44,7 @@ public class ActivityForm {
     private int pointTranning;
     private int pointSocial;
     private long countRegistered;
-    private MultipartFile avatar;
+
     private String desc;
     private String imgUrl;
     private String status;
@@ -205,5 +206,13 @@ public class ActivityForm {
 
     public void setCanRegister(boolean canRegister) {
         this.canRegister = canRegister;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 }

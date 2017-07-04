@@ -99,7 +99,27 @@ public class ActivityServiceImpl implements ActivityService{
     }
 
     @Override
-    public Page<Activity> getActivityByPublic(Pageable pageable) {
+    public List<Activity> getActivityByPublic(Pageable pageable) {
         return activityRepository.getActivitiesPublic(pageable);
+    }
+
+    @Override
+    public long countActivitiesPubic() {
+        return activityRepository.countActivitiesPublic();
+    }
+
+    @Override
+    public long countActivitiesOrgPublic(String orgId) {
+        return activityRepository.countActivitiesOrgPublic(orgId);
+    }
+
+    @Override
+    public List<Activity> search(String keyword, Pageable pageable) {
+        return activityRepository.search(keyword, pageable);
+    }
+
+    @Override
+    public List<Activity> searchOrg(String keyword, String orgId, Pageable pageable) {
+        return activityRepository.searchOrg(keyword, orgId, pageable);
     }
 }
