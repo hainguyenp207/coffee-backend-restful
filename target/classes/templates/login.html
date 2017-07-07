@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script>
+        function Submit() {
+            var username = document.querySelector("#username");
+            var password = document.querySelector("#password");
+            var csrf = document.querySelector("#csrf");
+            var xhttp = new XMLHttpRequest();
+
+            var data = {
+                "username": username.value,
+                "password": password.value
+            }
+
+            xhttp.open("post", "/abc");
+            xhttp.onreadystatechange = function () {
+                if (this.state == 4) {
+                    console.log("Data:", xhttp.responseText);
+                }
+            }
+            xhttp.setRequestHeader("Content-Type", "application/json");
+            xhttp.setRequestHeader("X-CSRF-TOKEN",csrf.value);
+
+            xhttp.send(JSON.stringify(data));
+            console.log(data);
+        }
+    </script>
+</head>
+
+<body>
+<h1 th:text="'Hello, ' + ${name} + '!'" />
+
+<form name="login-form" method="post" th:object="${login}" id="form">
+    <h1 id="result"></h1>
+
+    <input th:type="text" th:name="username" id="username" />
+    <br/>
+    <input th:type="password" th:name="password" id="password" />
+    <br/>
+    <input
+            type="hidden"
+            id="csrf"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}" />
+    <input type="button" id="submit" onclick="Submit()" value="Submit" />
+</form>
+
+</body>
+
+</html>
