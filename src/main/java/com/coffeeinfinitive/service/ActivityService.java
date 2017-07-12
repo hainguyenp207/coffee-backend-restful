@@ -11,18 +11,14 @@ import java.util.List;
  */
 
 public interface ActivityService {
-    List<Activity> getActivities() ;
     Page<Activity> getActivitiesByPage(Pageable pageable);
-    //Page<Activity> getActivitiesByPage(Pageable pageable);
     Activity findActivityById(String id);
-    List<Activity> getActivityByUser(String userId);
-    List<Activity> getActivityByUser(String userId,Pageable pageable);
-    List<Activity> getActivityByOrg(String userId);
-    List<Activity> getActivityByOrg(String orgId,Pageable pageable);
-    List<Activity> getActivitiesOrgPublic(String orgId,Pageable pageable);
-    List<Activity> search(String keyword, Pageable pageable);
-    List<Activity> searchOrg(String keyword, String orgId, Pageable pageable);
-    List<Activity> getActivityByPublic(Pageable pageable);
+    Page<Activity> getActivityByUser(String userId,Pageable pageable);
+    Page<Activity> getActivityByOrg(String orgId,Pageable pageable);
+    Page<Activity> getActivitiesOrgPublic(String orgId,Pageable pageable);
+    Page<Activity> search(String keyword, Pageable pageable);
+    Page<Activity> searchOrg(String keyword, String orgId, Pageable pageable);
+    Page<Activity> getActivityByPublic(Pageable pageable);
     Activity save(Activity activity);
     Activity update(Activity activity);
     long count();

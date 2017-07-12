@@ -24,11 +24,6 @@ public class ActivityServiceImpl implements ActivityService{
     private ActivityRepository activityRepository;
 
     @Override
-    public List<Activity> getActivities() {
-        return activityRepository.findAll();
-    }
-
-    @Override
     public Activity findActivityById(String id) {
         return activityRepository.findOne(id);
     }
@@ -59,22 +54,12 @@ public class ActivityServiceImpl implements ActivityService{
     }
 
     @Override
-    public List<Activity> getActivityByUser(String userId) {
+    public Page<Activity> getActivityByUser(String userId, Pageable pageable) {
         return null;
     }
 
     @Override
-    public List<Activity> getActivityByUser(String userId, Pageable pageable) {
-        return null;
-    }
-
-    @Override
-    public List<Activity> getActivityByOrg(String orgId) {
-        return activityRepository.getActivitiesByOrg(orgId);
-    }
-
-    @Override
-    public List<Activity> getActivityByOrg(String orgId, Pageable pageable) {
+    public Page<Activity> getActivityByOrg(String orgId, Pageable pageable) {
         return activityRepository.getActivitiesByOrg(orgId,pageable);
     }
 
@@ -94,12 +79,12 @@ public class ActivityServiceImpl implements ActivityService{
     }
 
     @Override
-    public List<Activity> getActivitiesOrgPublic(String orgId, Pageable pageable) {
+    public Page<Activity> getActivitiesOrgPublic(String orgId, Pageable pageable) {
         return activityRepository.getActivitiesPublic(orgId, pageable);
     }
 
     @Override
-    public List<Activity> getActivityByPublic(Pageable pageable) {
+    public Page<Activity> getActivityByPublic(Pageable pageable) {
         return activityRepository.getActivitiesPublic(pageable);
     }
 
@@ -114,12 +99,12 @@ public class ActivityServiceImpl implements ActivityService{
     }
 
     @Override
-    public List<Activity> search(String keyword, Pageable pageable) {
+    public Page<Activity> search(String keyword, Pageable pageable) {
         return activityRepository.search(keyword, pageable);
     }
 
     @Override
-    public List<Activity> searchOrg(String keyword, String orgId, Pageable pageable) {
+    public Page<Activity> searchOrg(String keyword, String orgId, Pageable pageable) {
         return activityRepository.searchOrg(keyword, orgId, pageable);
     }
 }

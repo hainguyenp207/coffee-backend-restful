@@ -22,10 +22,10 @@ public interface ActivityRepository extends JpaRepository<Activity, String>, Jpa
 //    List<Activity> getActivitiesByUser(String userId,Pageable pageable);
 
     @Query("select ac from Activity ac where ac.organization.id=:orgId")
-    List<Activity> getActivitiesByOrg(@Param("orgId") String orgId,Pageable pageable);
+    Page<Activity> getActivitiesByOrg(@Param("orgId") String orgId,Pageable pageable);
 
-    @Query("select ac from Activity ac where ac.confirmed = true")
-    List<Activity> getActivitiesPublic(Pageable pageable);
+    @Query("select ac from Activity ac where ac.confirmed = true ")
+    Page<Activity> getActivitiesPublic(Pageable pageable);
 
     @Query("select count(ac) from Activity ac where ac.confirmed = true")
     long countActivitiesPublic();
@@ -33,11 +33,8 @@ public interface ActivityRepository extends JpaRepository<Activity, String>, Jpa
     @Query("select count(ac) from Activity ac where ac.confirmed = true and ac.organization.id=:orgId")
     long countActivitiesOrgPublic(@Param("orgId") String orgId);
 
-    @Query("select ac from Activity ac where ac.organization.id=:orgId and ac.confirmed = true")
-    List<Activity> getActivitiesPublic(@Param("orgId") String orgId,Pageable pageable);
-
-    @Query("select ac from Activity ac where ac.organization.id=:orgId")
-    List<Activity> getActivitiesByOrg(@Param("orgId") String orgId);
+    @Query("select ac from Activity ac where ac.organization.id=:orgId and ac.confirmed = true order by ac.startDate desc")
+    Page<Activity> getActivitiesPublic(@Param("orgId") String orgId,Pageable pageable);
 
     @Query("select count(r) from Activity r where r.confirmed = false")
     long countActivitiesConfirm();
@@ -48,9 +45,9 @@ public interface ActivityRepository extends JpaRepository<Activity, String>, Jpa
     @Query("select count(r) from Activity r where r.confirmed = false and r.organization.id=:orgId")
     long countActivitiesByOrgConfirm(@Param("orgId") String orgId);
 
-    @Query("select r from Activity r where r.confirmed = true and r.organization.id=:orgId and (r.name LIKE CONCAT('%',:keyword,'%') or r.description LIKE CONCAT('%',:keyword,'%'))")
-    List<Activity> searchOrg(@Param("keyword") String keyword, @Param("orgId") String orgId,Pageable pageable);
+    @Query("select r from Activity r where r.confirmed = true and r.organization.id=:orgId and (r.name LIKE CONCAT('%',:keyword,'%') or r.description LIKE CONCAT('%',:keyword,'%')) order by r.startDate desc" )
+    Page<Activity> searchOrg(@Param("keyword") String keyword, @Param("orgId") String orgId,Pageable pageable);
 
     @Query("select r from Activity r where r.confirmed = true and (r.name LIKE CONCAT('%',:keyword,'%') or r.description LIKE CONCAT('%',:keyword,'%'))")
-    List<Activity> search(@Param("keyword") String keyword,Pageable pageable);
+    Page<Activity> search(@Param("keyword") String keyword,Pageable pageable);
 }

@@ -2,6 +2,7 @@ package com.coffeeinfinitive.service.impl;
 
 import com.coffeeinfinitive.constants.ResultCode;
 import com.coffeeinfinitive.dao.entity.User;
+import com.coffeeinfinitive.dao.reponsitories.UserOrgRepository;
 import com.coffeeinfinitive.dao.reponsitories.UserRepository;
 import com.coffeeinfinitive.exception.CoffeeAuthException;
 import com.coffeeinfinitive.service.UserService;
@@ -22,15 +23,17 @@ import java.util.List;
 public class UserServiceImpl implements UserService{
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserOrgRepository userOrgRepository;
 
     @Override
-    public Page<User> getUsersByPage(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<User> getUserByOrg(String orgId, Pageable pageable) {
+        return userOrgRepository.getUserByOrg(orgId, pageable);
     }
 
     @Override
-    public List<User> getAllUser() {
-        return userRepository.findAll();
+    public long countUserByOrg(String orgId) {
+        return userOrgRepository.countOrgUserByOrganization(orgId);
     }
 
     @Override
@@ -51,5 +54,10 @@ public class UserServiceImpl implements UserService{
     @Override
     public long count() {
         return userRepository.count();
+    }
+
+    @Override
+    public Page<User> getUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 }

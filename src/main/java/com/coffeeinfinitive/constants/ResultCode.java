@@ -22,7 +22,7 @@ public enum ResultCode {
     ORGANZITION_EXIST(16,"Organization exist","CLB, Tổ chức đã tồn tại, vui lòng chọn tổ chức khác"),
     ACTIVITY_EXIST(17,"Activity exist","Hoạt động đã tồn tại"),
     ACTIVITY_NOT_FOUND(18,"Activity not found","Hoạt động không đã tồn tại"),
-    REGISTER_EXIST(19,"REGISTER exist","Hoạt động đã đăng ký"),
+    REGISTER_EXIST(19,"REGISTER exist","Bạn đã đăng ký hoạt động này"),
     REGISTER_NOT_FOUND(20,"REGISTER not found","Hoạt động chưa được đăng ký"),
     ACTIVITY_NOT_ACTIVED(21,"Activity not active","Hoạt động chưa cho phép đăng ký"),
     ACTIVITY_REGISTERED(22,"Activity registerd","Hoạt động đã được đăng ký"),

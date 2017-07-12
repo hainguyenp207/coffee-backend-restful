@@ -27,7 +27,6 @@ import java.util.*;
     private String number;
     private boolean sex;
     private String address;
-    private String organizationId;
     private Set<Activity> activitiesCreated;
     private Set<Activity> activitiesUpdated;
     private Collection<SimpleGrantedAuthority> authorities = new HashSet<>();

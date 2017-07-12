@@ -10,6 +10,9 @@ import com.coffeeinfinitive.service.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,13 +51,25 @@ public class UserController {
 
 
     @GetMapping("/count")
-    public ResponseEntity<?> getTotalRow(){
+    public ResponseEntity<?> getTotalRow(@RequestParam(value = "organization_id", required = false)
+                                                     String orgId){
+        if(orgId==null)
      return new ResponseEntity<Object>(userService.count(), HttpStatus.OK);
+        return new ResponseEntity<Object>(userService.countUserByOrg(orgId), HttpStatus.OK);
     }
     // Lấy tất cả user
-    @GetMapping()
-    public ResponseEntity<List<?>> getAllUser(){
-        List<User> users = userService.getAllUser();
+    @GetMapping
+    public ResponseEntity<List<?>> getAllUser(@RequestParam(value = "page",defaultValue = "0") int page,
+                                              @RequestParam(value = "size", defaultValue = "50") int size,
+                                              @RequestParam(value = "organization_id", required = false) String orgId
+                                              ){
+        PageRequest pageRequest = new PageRequest(page,size);
+        Page<User> users;
+        if(orgId == null)
+            users = userService.getUsers(pageRequest);
+        else
+            users = userService.getUserByOrg(orgId,pageRequest);
+
         List<UserForm> usersModel = new ArrayList<>();
         users.forEach(user->{
             UserForm userForm = new UserForm(user.getUsername(),user.getName(),

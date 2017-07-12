@@ -105,6 +105,7 @@ public class Activity implements Serializable{
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "Asia/Ho_Chi_Minh")
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+    @OrderColumn(name="INDEX")
     public Date getStartDate() {
         return startDate;
     }

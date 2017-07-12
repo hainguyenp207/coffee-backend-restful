@@ -31,12 +31,9 @@ public class Comment implements Serializable{
     private Date lastUpdatedDate;
     private User lastUpdatedBy;
 
-
     public Comment(){
         this.id = UUID.randomUUID().toString();
     }
-
-
     @Id
     public String getId() {
         return id;

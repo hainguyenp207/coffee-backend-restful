@@ -48,10 +48,8 @@ public class ActivityController {
     ValidatorService validatorService;
     @Autowired
     OrganizationService organizationService;
-    @Autowired
-    CommentService commentService;
-    private Gson gson;
 
+    private Gson gson;
 
     @Value("${server.context-path}")
     private static String UPLOADED_FOLDER;
@@ -63,27 +61,8 @@ public class ActivityController {
         this.UPLOADED_FOLDER = "";
         gson = new GsonBuilder().setDateFormat("dd-MM-yyyy HH:mm").create();
     }
-
-    //    @GetMapping
-//    public ResponseEntity<List<?>> getActivities() {
-//        List<Activity> activities = activityService.getActivities();
-//        List<ActivityForm> activityForms = new ArrayList<>();
-//        activities.forEach(activity -> {
-//            ActivityForm activityForm = new ActivityForm();
-//            activityForm.setConfirmed(activity.isConfirmed());
-//            activityForm.setActivityTypeId(activity.getActivityTypeId());
-//            activityForm.setStartDate(activity.getStartDate());
-//            activityForm.setEndDate(activity.getEndDate());
-//            activityForm.setCreatedDate(activity.getCreatedDate());
-//            activityForm.setId(activity.getId());
-//            activityForm.setName(activity.getName());
-//            activityForms.add(activityForm);
-//        });
-//
-//        return new ResponseEntity<List<?>>(activityForms, HttpStatus.OK);
-//    }
     @GetMapping()
-    public List<ActivityForm> getActivitiesByPage(@RequestParam(value = "page",defaultValue = "0") int page,
+    public List<ActivityForm> getActivities(@RequestParam(value = "page",defaultValue = "0") int page,
                                                   @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
         Page<Activity> activities = activityService.getActivitiesByPage(pageRequest);
@@ -107,10 +86,10 @@ public class ActivityController {
     }
 
     @GetMapping(path = "/public")
-    public List<ActivityForm> getActivitiesPublicByPage(@RequestParam(value = "page",defaultValue = "0") int page,
+    public List<ActivityForm> getActivitiesPublic(@RequestParam(value = "page",defaultValue = "0") int page,
                                                   @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
-        List<Activity> activities = activityService.getActivityByPublic(pageRequest);
+        Page<Activity> activities = activityService.getActivityByPublic(pageRequest);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -130,12 +109,12 @@ public class ActivityController {
     }
 
     @GetMapping(path = "/public/search")
-    public List<ActivityForm> getActivitiesPublicByPage(
+    public List<ActivityForm> searchActivitiesPublic(
             @RequestParam(value = "q") String keyword,
             @RequestParam(value = "organization_id", required = false) String organizationId, @RequestParam(value = "page",defaultValue = "0") int page,
                                                         @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
-        List<Activity> activities;
+        Page<Activity> activities;
         if(organizationId==null){
             if(keyword.isEmpty())
                 activities = activityService.getActivityByPublic(pageRequest);
@@ -148,7 +127,6 @@ public class ActivityController {
             else
             activities = activityService.searchOrg(keyword, organizationId, pageRequest);
         }
-
 
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
@@ -170,10 +148,10 @@ public class ActivityController {
     }
 
     @GetMapping(path = "/organizations/{orgId}/public")
-    public List<ActivityForm> getActivitiesPublicOrgByPage(@PathVariable("orgId") String orgId, @RequestParam(value = "page",defaultValue = "0") int page,
+    public List<ActivityForm> getActivitiesPublicOrg(@PathVariable("orgId") String orgId, @RequestParam(value = "page",defaultValue = "0") int page,
                                                   @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
-        List<Activity> activities = activityService.getActivitiesOrgPublic(orgId,pageRequest);
+        Page<Activity> activities = activityService.getActivitiesOrgPublic(orgId,pageRequest);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -194,7 +172,7 @@ public class ActivityController {
     }
 
     @GetMapping(path = "/points")
-    public List<ActivityForm> getActivitiesMarkPointByPage(@RequestParam(value = "page",defaultValue = "0") int page,
+    public List<ActivityForm> getActivitiesMarkPoint(@RequestParam(value = "page",defaultValue = "0") int page,
                                                   @RequestParam(value = "size", defaultValue = "50") int size) {
         PageRequest pageRequest = new PageRequest(page,size);
         Page<Activity> activities = activityService.getActivitiesByPage(pageRequest);
@@ -227,14 +205,14 @@ public class ActivityController {
 
     /**
      * Paging public
-     * @param org
+     * @param organization
      * @return
      */
     @GetMapping(path="/count/public")
-    public ResponseEntity<?> getRowPublic(@RequestParam(value = "org", required = false) String org){
-        if(org == null)
+    public ResponseEntity<?> countActivitiesPublic(@RequestParam(value = "org", required = false) String organization){
+        if(organization == null)
         return new ResponseEntity<Object>(activityService.countActivitiesPubic(), HttpStatus.OK);
-        return new ResponseEntity<Object>(activityService.countActivitiesOrgPublic(org),HttpStatus.OK);
+        return new ResponseEntity<Object>(activityService.countActivitiesOrgPublic(organization),HttpStatus.OK);
     }
 
     // Đếm tổng số hoạt động chờ duyệt
@@ -276,22 +254,6 @@ public class ActivityController {
         return new ResponseEntity<>(register, HttpStatus.OK);
     }
 
-    /*
-    Lay comment cua 1 hoat dong
-     */
-    @GetMapping(path = "/{id}/comments")
-    public ResponseEntity<?> getComment(@PathVariable("id") String id) {
-        Activity activity = activityService.findActivityById(id);
-
-        if (activity == null) {
-            JsonObject result = new JsonObject();
-            result.addProperty("code", ResultCode.ACTIVITY_NOT_FOUND.getCode());
-            result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
-            return new ResponseEntity<>(result.toString(), HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(activity.getComments(), HttpStatus.OK);
-    }
-
     @GetMapping(path = "/{id}")
     public ResponseEntity<?> getActivity(@PathVariable("id") String id) {
         Activity activity = activityService.findActivityById(id);
@@ -325,7 +287,7 @@ public class ActivityController {
             return new ResponseEntity<Object>(result.toString(),HttpStatus.NOT_FOUND);
         }
 
-        List<Activity> activities = activityService.getActivityByUser(userId,pageable);
+        Page<Activity> activities = activityService.getActivityByUser(userId,pageable);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -354,7 +316,7 @@ public class ActivityController {
             result.addProperty("message", ResultCode.ORGANZITION_NOT_FOUND.getMessageVn());
             return new ResponseEntity<Object>(result.toString(),HttpStatus.NOT_FOUND);
         };
-        List<Activity> activities = activityService.getActivityByOrg(orgId,pageable);
+        Page<Activity> activities = activityService.getActivityByOrg(orgId,pageable);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -384,7 +346,7 @@ public class ActivityController {
             result.addProperty("message", ResultCode.ORGANZITION_NOT_FOUND.getMessageVn());
             return new ResponseEntity<Object>(result.toString(),HttpStatus.NOT_FOUND);
         };
-        List<Activity> activities = activityService.getActivityByOrg(orgId,pageable);
+        Page<Activity> activities = activityService.getActivitiesOrgPublic(orgId,pageable);
         List<ActivityForm> activityForms = new ArrayList<>();
         activities.forEach(activity -> {
             ActivityForm activityForm = new ActivityForm();
@@ -519,6 +481,19 @@ public class ActivityController {
             throw new CoffeeSystemErrorException("", e);
         }
     }
+    @PutMapping(path = "/{id}/form", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> updateActivity(Authentication auth, @PathVariable("id") String id,
+                                            @RequestBody ActivityForm activityForm ) {
+        Activity currentActivity = activityService.findActivityById(id);
+        if (currentActivity == null) {
+            JsonObject result = new JsonObject();
+            result.addProperty("code", ResultCode.ACTIVITY_NOT_FOUND.getCode());
+            result.addProperty("message", ResultCode.ACTIVITY_NOT_FOUND.getMessageVn());
+            return new ResponseEntity<>(result.toString(), HttpStatus.NOT_FOUND);
+        }
+        currentActivity.setConfirmed(activityForm.isConfirmed());
+        activityService.update(currentActivity);
+        return new ResponseEntity<>(activityForm.isConfirmed(),HttpStatus.OK);    }
 
     @DeleteMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> deleteActivity(Authentication auth, @PathVariable("id") String id) {
@@ -540,6 +515,7 @@ public class ActivityController {
             throw new CoffeeSystemErrorException("", e);
         }
     }
+
     private void saveUploadedFiles(MultipartFile file) throws IOException {
             byte[] bytes = file.getBytes();
             Path path = Paths.get(UPLOADED_FOLDER + file.getOriginalFilename());

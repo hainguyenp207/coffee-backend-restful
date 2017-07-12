@@ -48,31 +48,30 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
     public Authentication attemptAuthentication(
             HttpServletRequest req, HttpServletResponse res)
             throws AuthenticationException, IOException, ServletException {
-            try{
-                CoffeeJwtAuthenticationRequest authRequest = toAuthRequest(req);
-                if(authRequest.getUsername() == null || authRequest.getUsername().isEmpty()){
-                    throw new CoffeeAuthException(ResultCode.USERNAME_INVALID_REQUIRED.getCode(),ResultCode.USERNAME_INVALID_REQUIRED.getMessageVn());
-                }
-                if(authRequest.getPassword() == null || authRequest.getPassword().isEmpty()){
-                    throw new CoffeeAuthException(ResultCode.PASSWORD_INVALID_REQUIRED.getCode(), ResultCode.PASSWORD_INVALID_REQUIRED.getMessageVn());
-                }
-                final UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword(),null);
-                try{
-                 return getAuthenticationManager().authenticate(loginToken);
-                }catch (CoffeeAuthException e){
-                    System.out.println("Code" + e.getCode());
-                    return null;
-                }
-
-
-            }catch (JsonParseException e){
-                throw new CoffeeAuthException(ResultCode.PARSE_JSON_TO_OBJECT.getCode(), ResultCode.PARSE_JSON_TO_OBJECT.getMessageVn());
+        try {
+            CoffeeJwtAuthenticationRequest authRequest = toAuthRequest(req);
+            if (authRequest.getUsername() == null || authRequest.getUsername().isEmpty()) {
+                throw new CoffeeAuthException(ResultCode.USERNAME_INVALID_REQUIRED.getCode(), ResultCode.USERNAME_INVALID_REQUIRED.getMessageVn());
             }
+            if (authRequest.getPassword() == null || authRequest.getPassword().isEmpty()) {
+                throw new CoffeeAuthException(ResultCode.PASSWORD_INVALID_REQUIRED.getCode(), ResultCode.PASSWORD_INVALID_REQUIRED.getMessageVn());
+            }
+            final UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword(), null);
+            try {
+                return getAuthenticationManager().authenticate(loginToken);
+            } catch (CoffeeAuthException e) {
+                return null;
+            }
+        } catch (JsonParseException e) {
+            throw new CoffeeAuthException(ResultCode.PARSE_JSON_TO_OBJECT.getCode(), ResultCode.PARSE_JSON_TO_OBJECT.getMessageVn());
+        }
 
     }
+
     private CoffeeJwtAuthenticationRequest toAuthRequest(HttpServletRequest request) throws IOException {
         return new ObjectMapper().readValue(request.getInputStream(), CoffeeJwtAuthenticationRequest.class);
     }
+
     @Override
     protected void successfulAuthentication(
             HttpServletRequest req,
@@ -85,29 +84,30 @@ public class CoffeeJwtLoginFilter extends AbstractAuthenticationProcessingFilter
         tokenAuthenticationService.addJwtTokenToHeader(res, authenticatedUser);
         User currentUser = userService.findUserById(auth.getName());
         try {
-            tokenAuthenticationService.addDataToBody(res, currentUser,orgUsers);
+            tokenAuthenticationService.addDataToBody(res, currentUser, orgUsers);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(auth.getPrincipal(),auth.getCredentials(),
-               null));
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(auth.getPrincipal(), auth.getCredentials(),
+                null));
     }
+
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException e) throws IOException, ServletException {
         SecurityContextHolder.clearContext();
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         JsonObject result = new JsonObject();
         if (e instanceof CoffeeAuthException) {
-            result.addProperty("code",((CoffeeAuthException) e).getCode());
+            result.addProperty("code", ((CoffeeAuthException) e).getCode());
 
         }
-        if(e.getMessage().equals("Bad credentials")){
+        if (e.getMessage().equals("Bad credentials")) {
             result.addProperty("message", ResultCode.BAD_CREDENTIAL.getMessageVn());
-        }else
+        } else
             result.addProperty("message", e.getMessage());
-        new Gson().toJson(result,response.getWriter());
+        new Gson().toJson(result, response.getWriter());
     }
 }

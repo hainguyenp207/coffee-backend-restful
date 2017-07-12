@@ -11,10 +11,11 @@ import java.util.List;
  */
 
 public interface UserService {
-    List<User> getAllUser();
-    Page<User> getUsersByPage(Pageable pageable);
+    Page<User> getUsers(Pageable pageable);
+    Page<User> getUserByOrg(String organizationId, Pageable pageable);
     User findUserById(String id);
     User save(User user);
     User updateUser(User user);
     long count();
+    long countUserByOrg(String organizationId);
 }

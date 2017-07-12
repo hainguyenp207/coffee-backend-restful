@@ -44,8 +44,9 @@ public class RegisterController {
 		  return new ResponseEntity<List<Register>>(registers, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/user/{userId}")
+    @GetMapping(path = "/user/{userId:.+}")
     public ResponseEntity<List<Register>> getRegisterByUser(@PathVariable("userId") String userId) {
+        System.out.print("USer id: " + userId);
         List<Register> registers = registerService.getRegistersByUser(userId);
         return new ResponseEntity<List<Register>>(registers, HttpStatus.OK);
     }

@@ -1,6 +1,7 @@
 package com.coffeeinfinitive.dao.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -83,6 +84,7 @@ public class Register {
     }
 
     @Column(name = "created_date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "Asia/Ho_Chi_Minh")
     public Date getCreatedDate() {
         return createdDate;
     }
@@ -121,6 +123,7 @@ public class Register {
         this.pointSocial = pointSocial;
     }
     @Column(name = "last_updated_date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "Asia/Ho_Chi_Minh")
     public Date getLastUpdatedDate() {
         return lastUpdatedDate;
     }
